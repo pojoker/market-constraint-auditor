@@ -1,5 +1,6 @@
 ---
 name: market-constraint-auditor
+user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
   (growth, inflation, liquidity, USD funding, geopolitical supply, policy, or
