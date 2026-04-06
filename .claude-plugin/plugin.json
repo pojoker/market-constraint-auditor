@@ -1,0 +1,7 @@
+{
+  "name": "market-constraint-auditor",
+  "description": "Cross-asset regime identification engine",
+  "author": {
+    "name": "pojoker"
+  }
+}
