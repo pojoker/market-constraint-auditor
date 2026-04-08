@@ -2,7 +2,7 @@
   "name": "market-constraint-auditor",
   "displayName": "Market Constraint Auditor",
   "description": "Cross-asset regime identification engine. Identifies the dominant constraint driving price action and audits market commentary.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "owner": {
     "name": "pojoker",
     "url": "https://github.com/pojoker"
@@ -13,7 +13,7 @@
     {
       "name": "market-constraint-auditor",
       "description": "Identifies the dominant constraint driving cross-asset price action and audits market commentary for logical gaps.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "source": "./"
     }
   ]

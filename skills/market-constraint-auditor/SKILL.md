@@ -1,5 +1,6 @@
 ---
 name: market-constraint-auditor
+version: "1.0.1"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
