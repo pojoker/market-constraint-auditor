@@ -3,5 +3,6 @@
   "description": "Cross-asset regime identification engine",
   "author": {
     "name": "pojoker"
-  }
+  },
+  "version": "1.0.1"
 }
