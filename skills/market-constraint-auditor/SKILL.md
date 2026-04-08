@@ -65,6 +65,21 @@ Steps:
    considering other regimes. This is the single most commonly misdiagnosed
    pattern.
 4. **Output** using the Regime Diagnosis schema (see protocol file, §Output Schemas).
+5. **Auto-save report.** After outputting, save the full report as a Markdown file:
+   - Directory: `/Volumes/移动硬盘/market-constraint-auditor/reports/`
+   - Filename: `{YYYYMMDD}--约束诊断-{主导约束代号}.md` (e.g. `20260408--约束诊断-M.md`)
+   - Content: the complete diagnosis output, prepended with a metadata header:
+     ```
+     # 市场约束诊断
+     **日期：** {YYYY-MM-DD}
+     **数据时间：** {fetched_at from script, or "用户提供"}
+     **主导约束：** {constraint ID and name}
+     **确定性：** {★}
+     ---
+     ```
+   - Use the Write tool to create the file. Create the directory first if it
+     doesn't exist (`mkdir -p`).
+   - Do not notify the user unless the write fails.
 
 ### Workflow B — Thesis Audit
 
@@ -81,6 +96,11 @@ Steps:
    alternatives?
 4. **Output** using the Thesis Audit schema, then append a condensed Regime
    Diagnosis for comparison.
+5. **Auto-save report.** After outputting, save the full audit as a Markdown file:
+   - Directory: `/Volumes/移动硬盘/market-constraint-auditor/reports/`
+   - Filename: `{YYYYMMDD}--观点审计-{核心主张前10字}.md`
+   - Same metadata header format as Workflow A.
+   - Do not notify the user unless the write fails.
 
 ### Workflow C — Watchlist Generation
 
@@ -94,12 +114,16 @@ Steps:
 2. For each variable, specify: what an upward move means, what a downward move
    means, and what threshold would signal a regime transition.
 3. **Output** using the Watchlist schema.
+4. **Auto-save report.** Append the watchlist to the most recent report file in
+   `/Volumes/移动硬盘/market-constraint-auditor/reports/` for today's date,
+   or create a new file if none exists today.
 
 ### Combined Flow
 
 If the user's request is broad (e.g., "帮我看看今天的盘，顺便审下这段观点"),
 run workflows in sequence: A → B → C. Do not ask which workflow to use — infer
-from context and execute.
+from context and execute. Save a single combined report file covering all
+workflows.
 
 ---
 
