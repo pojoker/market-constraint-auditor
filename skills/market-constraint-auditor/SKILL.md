@@ -43,11 +43,20 @@ Trigger: User provides asset prices, describes market moves, or says anything
 like "分析盘面" / "市场在交易什么" / "what's driving markets".
 
 Steps:
-1. **Gather data.** If the user provides asset data, use it. If the user says
-   something vague like "分析今天盘面" without specifics, use `web_search` to
-   fetch today's moves for: DXY, US 2Y/10Y yields, gold, Brent, S&P 500/Nasdaq,
-   VIX, and any relevant headlines. Do NOT ask the user to fill out a template —
-   go find the data yourself.
+1. **Gather data.** Priority order — stop at the first that succeeds:
+   a. **User-provided data:** If the user pastes prices or describes moves, use
+      those directly. Skip to step 2.
+   b. **fetch_prices.py (preferred):** Run the data-fetch script via Bash:
+      ```
+      python3 <skill_dir>/scripts/fetch_prices.py --summary
+      ```
+      Parse the JSON output. This returns DXY, US 2Y/10Y/30Y yields, Gold,
+      Silver, Brent, WTI, NatGas, S&P 500, Nasdaq, Russell 2000, VIX, MOVE,
+      EM_ETF, HYG, TLT, Copper, USDCNY, USDJPY with last price, change%, and
+      direction arrow. `<skill_dir>` is the base directory shown at skill load.
+   c. **web_search (fallback):** Only use web_search if the script fails (import
+      error, network timeout, or returns errors for all assets). Search for today's
+      moves for: DXY, US 10Y yield, gold, Brent, S&P 500, VIX.
 2. **Run the constraint matrix.** Compare the observed asset-direction vector
    against the regime fingerprints in the protocol file. Find the best match and
    the runner-up.
