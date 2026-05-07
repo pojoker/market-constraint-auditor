@@ -162,6 +162,22 @@ Rules:
   unless persistence and breadth tests are also passed. Report the two
   separately in Schema A.
 
+### Confidence whipsaw protection (v1.0.3)
+
+Confidence may **not** jump ≥2 levels in opposite direction within 24 hours.
+
+Examples of forbidden moves:
+- Yesterday ★★☆ regime X → today ★★★ regime ¬X. Forbidden by construction.
+- Yesterday ★★★ regime X → today ★★★ regime ¬X. Forbidden.
+
+Allowed moves on a same-direction reversal:
+- Yesterday ★★☆ regime X → today ★★☆ regime ¬X (single-level downgrade matched by single-level new direction). Allowed.
+- Reaching ★★★ on the new direction requires **≥2 consecutive sessions** of confirmation.
+
+**Justification:** A 1-day reversal immediately followed by max-confidence call on the opposite direction is observationally indistinguishable from noise + over-fitting. The cross-asset alignment may look clean today, but you cannot tell whether it's a real regime flip or a single-day mean reversion until the move persists. The cost of cap-at-★★☆ on day-1 of reversal is small (mild understatement); the cost of ★★★ on day-1 of a noise-driven reversal is large (max-confidence whipsaw call destroys the diagnostic record).
+
+**This rule overrides the matrix-match-count basis for ★★★ in §3 above.** Even if 5+ assets align with the new direction on day-1 of reversal, max confidence allowed is ★★☆.
+
 ### MOVE as flow-regime indicator (Layer 1 proxy)
 
 MOVE is the bond-volatility analog of VIX. Its single-day moves carry
@@ -205,13 +221,20 @@ Memorize these. Check against every output before delivering.
 | F8 | Layer conflation | Did I use L4 language ("X 正在发生") for an L2 observation, or claim L3 confidence from a single day's L2 alignment? See §0. |
 | F9 | Necessary-condition lock-in (meta-F4) | Did I invalidate today's signal using yesterday's necessary conditions? When a previously-anchoring asset goes silent, did I first ask "anchor migrated?" before "regime not real"? See §2 caveat. |
 | F10 | Flow-blindness | Did MOVE drop ≥ -5% on the same day risk assets ripped, while I attributed the move to narrative/regime without explicitly weighing vol-budget release? See §3 MOVE section. |
+| F11 | Phase-language without ex-ante anchor | Did I introduce state-change terms ("阶段切换", "承接测试", "裁决窗口", "质变升级") without referencing (a) a phase defined in this protocol or (b) a numerical threshold pre-defined in a prior session's falsification list? If so, replace with descriptive language ("price has crossed X" / "asset has moved beyond Y%") rather than coining new state names. |
+| F12 | Hand-wave trigger | Did I claim a trigger / catalyst / 触发器 without naming the specific news event or asset move? Statements like "无论具体事件是什么", "某种催化剂", "未指明的冲击" are forbidden. If you cannot name the source, rewrite as "price has moved X, cause unknown" — do not assert the existence of a trigger you cannot identify. |
 
-Before outputting, run through F1-F10 as a checklist. If any fails, fix the
+Before outputting, run through F1-F12 as a checklist. If any fails, fix the
 output.
 
 The most pernicious of these is F8. The word "regime" naturally flows between
 layers and a reader cannot distinguish without explicit tagging. **Default to
 L2 language; promote to L3 only with persistence; never promote to L4.**
+
+**F11 and F12 share a common root**: both are forms of "narrating beyond the
+evidence." F11 invents states the market has not declared; F12 asserts
+causation without naming the source. When in doubt on either, prefer
+descriptive language over coined terminology.
 
 ---
 
@@ -299,6 +322,44 @@ actually supports.
 
 **当前最该盯的一件事：** [从清单中选权重最高的一个]
 ```
+
+### Schema D: Abstention (不诊断声明) — v1.0.3
+
+Schema D is a **first-class output form**, not a downgraded Schema A. It exists to give the analyst a concrete way to refuse causal narrative when conditions don't support one. The cost of using Schema D should be zero; the burden of proof is on Schema A.
+
+**Use Schema D instead of Schema A when ANY of these holds:**
+
+1. **L2 confidence < ★★☆** — assets do not even align cleanly at the pricing layer
+2. **Confidence-whipsaw context** — within the last 3 sessions there was a regime reversal of ≥2 confidence levels in opposite direction (see §3 whipsaw rule). Stay in Schema D until ≥2 consecutive sessions of same-direction confirmation accumulate
+3. **Patchwork escalation** — diagnosing the asset vector requires ≥4 separate narrative elements or new explanatory hypotheses (protocol-defined exceptions like F10 do not count toward this threshold; "new" means not in the prior session's framework)
+4. **F11 or F12 unfixable** — diagnosis cannot be written without phase-language hand-waving or unnamed-trigger attribution
+
+**Format:**
+
+```
+## 不诊断声明 (Schema D)
+
+- **观测窗口：** [实际可用观测] vs [所需最低，按 §3 regime 默认值]
+- **不足支撑：** L2 / L3 哪几层无法做判断
+- **触发 Schema D 的具体条件：** [从上面 4 条里挑被命中的，引用具体证据]
+- **盘面纯描述：** [纯方向矢量，无因果框架，无 regime 标签]
+
+| 资产 | 方向 | 备注（仅事实，不带解释） |
+|------|------|-----------------------|
+| ...  | ...  | ...                    |
+
+- **何时重评：** [ex-ante 的数值条件——什么观察会让 Schema D 状态结束]
+```
+
+**Schema D 必须比 Schema A 短**——拒绝叙事就是它的意义。**禁止包含**：
+- 机制段（不解释传导）
+- 证伪条件（已经在 abstain 状态，无需为不存在的判断设证伪）
+- 观察清单（拒绝把"想看什么"打包成 actionable signals）
+- "一句话总结"叙事
+
+只有：方向矢量 + 拒绝理由 + 何时重评。
+
+**Schema D 不是失败模式，是正确响应**。一周里有 2-3 天输出 Schema D 是健康的——市场大部分时间不在清晰 regime 里。
 
 ---
 

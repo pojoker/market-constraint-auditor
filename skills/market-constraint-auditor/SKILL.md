@@ -1,6 +1,6 @@
 ---
 name: market-constraint-auditor
-version: "1.0.2"
+version: "1.0.3"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
@@ -65,10 +65,13 @@ Steps:
    falling while USD strengthens, flag liquidity/funding constraint before
    considering other regimes. This is the single most commonly misdiagnosed
    pattern.
-4. **Output** using the Regime Diagnosis schema (see protocol file, §Output Schemas).
+4. **Output** using the appropriate schema:
+   - **Schema A (Regime Diagnosis)** — default when conditions support a regime call
+   - **Schema D (Abstention / 不诊断声明)** — when L2 confidence < ★★☆, or in confidence-whipsaw context, or ≥4 patchwork narratives required, or F11/F12 unfixable. See protocol §5 for trigger conditions. **Schema D is not a downgraded Schema A; choose it deliberately when conditions warrant.**
 5. **Auto-save report.** After outputting, save the full report as a Markdown file:
    - Directory: `/Volumes/移动硬盘/market-constraint-auditor/reports/`
-   - Filename: `{YYYYMMDD}--约束诊断-{主导约束代号}.md` (e.g. `20260408--约束诊断-M.md`)
+   - Filename for Schema A: `{YYYYMMDD}--约束诊断-{主导约束代号}.md` (e.g. `20260408--约束诊断-M.md`)
+   - Filename for Schema D: `{YYYYMMDD}--不诊断-{触发条件代号}.md` (e.g. `20260408--不诊断-whipsaw.md`)
    - Content: the complete diagnosis output, prepended with a metadata header:
      ```
      # 市场约束诊断
@@ -171,6 +174,28 @@ These override everything else:
     industrial reflation)? (c) only then: is the regime not real? Using
     yesterday's filters to invalidate today's signals is meta-F4. See protocol
     §2 caveat and F9 in §4.
+11. **Confidence whipsaw protection (v1.0.3).** Within 24 hours, confidence may
+    not jump ≥2 levels in opposite direction. ★★☆ regime X yesterday → ★★★
+    regime ¬X today is forbidden by construction; cap at ★★☆ for ¬X, and
+    ★★★ requires ≥2 consecutive sessions of same-direction confirmation. The
+    cost of cap-at-★★☆ on day-1 of reversal is small; the cost of ★★★ on
+    a noise-driven reversal is large. See protocol §3 whipsaw rule.
+12. **Phase-transition language requires ex-ante anchor (v1.0.3).** Terms like
+    "阶段切换", "承接测试", "裁决窗口", "质变升级" must reference (a) a phase
+    defined in this protocol or (b) a numerical threshold pre-defined in the
+    prior session's falsification list. Otherwise replace with descriptive
+    language ("price has crossed X"). See protocol §4 F11.
+13. **Trigger claims require a named source (v1.0.3).** Any mention of "触发器",
+    "trigger", "催化剂" must name the specific news event or asset move.
+    Hand-wave attributions ("无论具体事件是什么", "某种催化剂", "未指明的冲击")
+    are forbidden — if unable to name, rewrite as "price has moved X, cause
+    unknown." See protocol §4 F12.
+14. **Default to Schema D under specified conditions (v1.0.3).** When L2
+    confidence < ★★☆, or in confidence-whipsaw context, or when ≥4 patchwork
+    narratives are required to explain the asset vector, output Schema D
+    (Abstention) instead of a degraded Schema A. Schema D explicitly refuses
+    causal narrative — it has no mechanism section, no falsification list,
+    no watchlist. Refusing to narrate is the point. See protocol §5 Schema D.
 
 ---
 
