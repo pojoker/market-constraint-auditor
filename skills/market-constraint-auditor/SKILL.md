@@ -1,6 +1,6 @@
 ---
 name: market-constraint-auditor
-version: "1.0.1"
+version: "1.0.2"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
@@ -151,6 +151,26 @@ These override everything else:
 7. **Confidence scales with evidence.** If you only have 2-3 asset classes,
    downgrade your language from "当前市场主导约束是X" to "初步判断偏向X，但证据
    不足以做高确定性结论".
+8. **Layer-tag every claim.** Distinguish "市场以 X 方式定价" (Layer 2 / Pricing,
+   what you can directly observe) from "X 是当前 regime" (Layer 3 / Narrative,
+   requires persistence and breadth) from "X 正在经济中发生" (Layer 4 / Reality,
+   **out of scope for this skill**). Never use one layer's language for another's
+   job. Default to L2; promote to L3 only with persistence; never claim L4.
+   See protocol §0.
+9. **MOVE collapse is a flow signal, not narrative confirmation.** When MOVE
+   drops sharply (≥ -5% / day) while risk assets rally broadly, weight the L1
+   mechanical explanation (vol-target / risk-parity VaR release → mechanical
+   re-leveraging) **before** the L3 reflation/policy-easing narrative. The same
+   L2 pattern is produced by either; you cannot distinguish within one session.
+   Cap L3 confidence at ★★☆ and propose a persistence test. See protocol §3.
+10. **Old-regime necessary conditions are not always necessary.** When an asset
+    that "should" speak under a candidate regime stays silent (e.g., UST 2Y flat
+    during what looks like a regime shift), ask in this order: (a) has the
+    regime's anchor migrated (Fed-primacy → fiscal-dominance / external-flow)?
+    (b) is the regime composition new (e.g., AI-capex reflation differs from
+    industrial reflation)? (c) only then: is the regime not real? Using
+    yesterday's filters to invalidate today's signals is meta-F4. See protocol
+    §2 caveat and F9 in §4.
 
 ---
 
