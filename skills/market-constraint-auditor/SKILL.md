@@ -1,6 +1,6 @@
 ---
 name: market-constraint-auditor
-version: "1.0.3"
+version: "1.0.4"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
@@ -47,7 +47,22 @@ Steps:
 1. **Gather data.** Priority order — stop at the first that succeeds:
    a. **User-provided data:** If the user pastes prices or describes moves, use
       those directly. Skip to step 2.
-   b. **fetch_prices.py (preferred):** Run the data-fetch script via Bash:
+   b. **Frozen snapshot + computed stats (preferred when a capture routine exists):**
+      If the project has a data store at `<project>/data/snapshots/`, read the
+      latest FROZEN mark plus code-computed trend/volatility stats via:
+      ```
+      python3 <project>/scripts/load_for_analysis.py --summary
+      ```
+      This returns the same asset-direction vector PLUS, per asset:
+      `Nd_change` (N-day cumulative move), `consec_same_dir` (signed trend
+      persistence), and `move_vol_pct` (today's |move| as a percentile of its
+      trailing distribution). Reading a frozen snapshot instead of re-fetching
+      live makes diagnoses reproducible and lets multiple models analyze the
+      IDENTICAL data mark (no intra-session drift). It also grounds the
+      noise-vs-signal call in statistics rather than recall — see §3 and the
+      mandatory check in step 2. Skip to step 2.
+   c. **fetch_prices.py (live fallback):** If no frozen snapshot data store exists
+      (e.g. the daily capture routine is not set up on this machine), fetch live:
       ```
       python3 <skill_dir>/scripts/fetch_prices.py --summary
       ```
@@ -55,12 +70,24 @@ Steps:
       Silver, Brent, WTI, NatGas, S&P 500, Nasdaq, Russell 2000, VIX, MOVE,
       EM_ETF, HYG, TLT, Copper, USDCNY, USDJPY with last price, change%, and
       direction arrow. `<skill_dir>` is the base directory shown at skill load.
-   c. **web_search (fallback):** Only use web_search if the script fails (import
+      Note: live fetch has NO multi-day trend/volatility context — you must not
+      assert multi-day trends or "noise vs signal" from a single live fetch.
+   d. **web_search (last resort):** Only use web_search if both above fail (import
       error, network timeout, or returns errors for all assets). Search for today's
       moves for: DXY, US 10Y yield, gold, Brent, S&P 500, VIX.
 2. **Run the constraint matrix.** Compare the observed asset-direction vector
    against the regime fingerprints in the protocol file. Find the best match and
    the runner-up.
+   - **Mandatory noise gate (when stats available):** If the data came from the
+     frozen-snapshot path (1b), every "this asset moved / confirms X" claim and
+     every multi-day trend claim must be checked against `move_vol_pct` and
+     `consec_same_dir`. A single-day move below the 50th volatility percentile is
+     NOISE — do not build a regime argument on it (it may still be cited as
+     "within range"). A multi-day trend claim requires `consec_same_dir` ≥ 2 (or
+     ≤ −2) OR a material `Nd_change`; never assert "two-day trend / second leg /
+     stalling" from arrows alone. This directly closes failure modes F3/F4 at the
+     evidence layer. When stats are unavailable (live fallback 1c), explicitly
+     downgrade trend/noise language and say so.
 3. **Check for liquidity/funding first.** If risk assets, gold, AND bonds are all
    falling while USD strengthens, flag liquidity/funding constraint before
    considering other regimes. This is the single most commonly misdiagnosed

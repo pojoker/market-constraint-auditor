@@ -162,6 +162,31 @@ Rules:
   unless persistence and breadth tests are also passed. Report the two
   separately in Schema A.
 
+### Volatility-percentile noise gate (v1.0.4)
+
+When the data comes from the frozen-snapshot path (SKILL.md step 1b), each asset
+carries `move_vol_pct` (today's |move| as a percentile of its trailing
+distribution) and `consec_same_dir` (signed run-length of same-direction days).
+Use them to separate signal from noise **with statistics, not narrative
+instinct** — this is the structural fix for the most common authoring error
+(over-reading a single trivial daily move into a regime story):
+
+- **`move_vol_pct` < 50** → the move is below its own median; treat as NOISE.
+  It may be cited as "within range" but must NOT anchor a regime argument or a
+  confidence change. (Example failure: a +0.13% DXY day at the 7th percentile is
+  not "dollar strength resuming.")
+- **`move_vol_pct` ≥ 80** → an unusually large move; this IS signal worth a
+  mechanism, even if a single day.
+- **Multi-day trend claims** ("second leg", "stalling", "X days of") require
+  `consec_same_dir` ≥ 2 (or ≤ −2) **or** a material `Nd_change`. Never assert a
+  trend from direction arrows alone — arrows are single-day and memoryless.
+- When stats are unavailable (live-fetch fallback, step 1c), you have no
+  percentile context: explicitly downgrade all trend/noise language and say the
+  judgment is provisional.
+
+This gate operates at the evidence layer, upstream of confidence — it removes
+noise-based evidence before L2/L3 scoring, rather than discounting it after.
+
 ### Confidence whipsaw protection (v1.0.3)
 
 Confidence may **not** jump ≥2 levels in opposite direction within 24 hours.
