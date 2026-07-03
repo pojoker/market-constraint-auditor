@@ -18,7 +18,7 @@ to Layer 1 or Layer 4.
 
 | Layer | What it describes | What you need to see it | This skill's access |
 |-------|-------------------|-------------------------|---------------------|
-| **L1 Flow** | Mechanical positioning: dealer gamma, CTA, vol-target VaR, systematic re-leveraging, short covering | dealer/CTA position data, OI, fund flows | **Proxy only** (via MOVE, VIX behavior, breadth asymmetries) |
+| **L1 Flow** | Mechanical positioning: dealer gamma, CTA, vol-target VaR, systematic re-leveraging, short covering | dealer/CTA position data, OI, fund flows | **Proxy only** (via MOVE, VIX behavior, breadth asymmetries, **BTC** as a 24/7 high-beta risk-appetite / marginal-liquidity proxy — confirmer only, see §3) |
 | **L2 Pricing** | Cross-asset directional alignment — what the matrix in §2 reads | last prices + day moves across asset classes | **Direct** — this is what we see |
 | **L3 Narrative** | The story the market is pricing toward (reflation, recession, funding stress, etc.) | inference from L2 + persistence over time | **Indirect** — inferred from L2 |
 | **L4 Reality** | What is actually happening in the economy: PMIs, credit creation, freight, earnings, loan growth, inventories | macroeconomic data, micro data, surveys | **None** — out of scope |
@@ -92,18 +92,56 @@ not definitive, ↓? = biased down but not definitive
 | USD funding stress | ↑↑ | — | ↓? | — | ↓ (esp. non-US) | ↑ |
 | Geopolitical supply shock | — | — | ↑? | ↑↑ | ↓ (sector-specific) | ↑ |
 | Policy easing trade | ↓? | ↑ | ↑? | — | ↑ (growth > value) | ↓ |
+| Sell-America / debasement (P family, v1.0.5) | ↓ | ↓ (yield ↑, bear-steepening; **2Y anchored**) | ↑ (Silver confirms) | — | — (signal-grade ↓ = conflict) | ↓ / low level |
 | Multi-constraint | conflicting signals across columns; no single row matches cleanly |
+
+### Sell-America / debasement row (v1.0.5)
+
+Added after this fingerprint recurred without a home (2026-05-07 "P 质变升级",
+2026-07-03 P diagnosis) and kept forcing low-confidence patchwork inside the
+Policy row. Core read: **the store-of-value properties of the dollar AND long
+Treasuries are being discounted simultaneously, with precious metals as the
+receiving asset** — fiscal supply / term-premium repricing, not a Fed-path trade.
+
+Fingerprint (asset-class level; ex-ante grouping lives in `data/regime_matrix.json`):
+- **USD ↓** — ≥2 of DXY / USDJPY / USDCNY at signal grade
+- **Long end sold** — 10Y/30Y yields ↑ (TLT ↓), bear-steepening
+- **2Y anchored** — front end silent is *required*, not merely tolerated: a
+  signal-grade 2Y move in **either** direction breaks the row (down → relabel
+  policy-easing; up → whole-curve selloff, different constraint)
+- **Precious ↑** — gold leads, silver confirms
+- **Risk assets not required to rally** — neutral is consistent; but a
+  signal-grade equity/EM **decline counts as a conflict** (growth-divergence
+  guard: USD weak + stocks falling is not benign debasement)
+- **Vol ↓ or low** — this row alone may satisfy its vol leg via low absolute
+  levels (VIX ≤ 18, MOVE ≤ 75) when daily vol moves are noise; the low-level
+  channel does not count toward the ≥4 signal-class threshold
+
+Disambiguation:
+- **vs. Policy easing:** easing → long end *rallies* and 2Y *leads lower*;
+  debasement → long end *sells off* and 2Y stays anchored.
+- **vs. USD funding stress:** funding → USD **up**; debasement → USD **down**.
+
+Confidence: single-day max **★★☆**; ★★★ requires ≥2 consecutive sessions
+(same discipline as the whipsaw rule — day-1 of a USD reversal is
+observationally identical to positioning mean-reversion).
 
 ### How to use the matrix
 
-1. Build the observed direction vector from user data or web search results.
-2. Score each regime row by counting matches vs. mismatches.
+1. Build the observed direction vector from the frozen mark's computed stats.
+2. **Row scoring, the override check, the ≥4-asset-class threshold, and whipsaw
+   caps are computed mechanically by `scripts/score_regimes.py`** against the
+   machine-readable transcription of this matrix (`data/regime_matrix.json`).
+   The analyst adjudicates on top of that output and does not re-count by hand
+   (SKILL.md rule 15).
 3. The highest-scoring row is the primary diagnosis; the second-highest is the
    alternative.
 4. **Critical override:** If USD ↑, gold ↓, bonds ↓, risk ↓ simultaneously →
    score Liquidity/Funding first regardless of other signals. This pattern is the
    most dangerous to misdiagnose because conventional "risk-off" playbooks fail.
-5. If no row scores above 60% match, default to Multi-constraint and say so.
+5. If no row scores above 60% match (or fewer than 4 asset classes are
+   signal-aligned — `schema_d_suggested`), default to Multi-constraint or
+   Schema D and say so.
 
 ### Disambiguation rules
 
@@ -115,6 +153,13 @@ Some regimes produce similar fingerprints. Use these tiebreakers:
 - **Liquidity crunch vs. USD funding stress:** Check gold and EM FX. If gold is
   also being liquidated, it's liquidity (sell everything). If gold holds but EM
   FX collapses, it's USD funding (dollar shortage, not universal deleveraging).
+  **BTC as confirmer (not driver):** a signal-grade BTC drawdown *in confluence
+  with* MOVE↑ / HYG↓ / EM↓ strengthens the L (liquidity) read — BTC is the
+  highest-beta, most leverage-sensitive risk asset, so it tends to break first
+  when funding tightens. But BTC moving *alone* (funding proxies quiet) is
+  crypto-idiosyncratic (ETF flows, regulation, liquidations) → not a macro
+  liquidity signal. BTC does **not** get its own matrix row and never drives the
+  call by itself; it adds breadth/confirmation only. See §3 BTC subsection.
 - **Inflation trade vs. Geopolitical supply shock:** Check the breadth of
   commodity moves. If oil AND base metals AND ags are all up, it's broad
   inflation. If only oil/shipping/insurance are up, it's geopolitical supply.
@@ -203,6 +248,16 @@ Allowed moves on a same-direction reversal:
 
 **This rule overrides the matrix-match-count basis for ★★★ in §3 above.** Even if 5+ assets align with the new direction on day-1 of reversal, max confidence allowed is ★★☆.
 
+**What counts as "¬X" — regime_row semantics (v1.0.5):** reversal comparison is
+by **matrix row key** (`regime_row`, recorded per diagnosis in
+`data/diagnosis_log.jsonl`), not by constraint code. Rows with opposite
+fingerprints inside the same constraint family — `policy_easing_trade`
+(long end rallies, 2Y leads lower) vs. `sell_america_debasement` (long end
+sells off, 2Y anchored) both carry code P — **are reversals of each other** and
+trigger the cap like any other flip. The cap is enforced mechanically by
+`scripts/score_regimes.py` (reads the ledger's most recent entry within 3
+sessions); the analyst may tighten it further but never loosen it silently.
+
 ### MOVE as flow-regime indicator (Layer 1 proxy)
 
 MOVE is the bond-volatility analog of VIX. Its single-day moves carry
@@ -228,6 +283,38 @@ when MOVE flattens, it was vol-budget mechanics — not regime.
 This is the most important update to add to your reading: MOVE is no longer
 just a "bond market trust" indicator. It is the cleanest L1 proxy you have.
 
+### BTC as a liquidity / risk-appetite proxy (24/7, high-beta)
+
+BTC is included as a **marginal-liquidity / risk-appetite proxy** (L1 flow / L2
+pricing). Its appeal — no cash-flow anchor, maximum leverage sensitivity, 24/7 —
+is also its hazard: it is reflexive and fat-tailed, so a raw daily % move looks
+alarming next to DXY or HYG and invites over-reading. Three disciplines keep it
+useful without being spooked:
+
+1. **Read it through the percentile gate, not the raw %.** `move_vol_pct`
+   normalizes today's move against BTC's *own* trailing distribution, so BTC's
+   high baseline volatility is already neutralized — you compare percentile
+   ranks, never raw percentages. **Use a higher signal bar for BTC: treat only
+   `move_vol_pct ≥ 65` as signal-grade** (vs the ≥50 default for other assets),
+   because BTC's fat tails mean even percentile-normalized daily moves are noisy.
+   Below 65 → cite as "within range," never anchor a read on it.
+2. **Read the liquidity stance off the trend, not the tick.** Liquidity regimes
+   are slow; a single red BTC candle is not a liquidity event. Require
+   `consec_same_dir ≥ 2` (or ≤ −2) or a material `Nd_change` before any
+   BTC-based persistence claim. (Example: a −4.5% day at vol 91 with consec −10
+   *is* a sustained drawdown worth weighing; an isolated −4.5% at vol 40 is not.)
+3. **Confluence-only — BTC never counts alone.** BTC contributes to the **L
+   (liquidity)** / **F (USD funding)** read *only* when it agrees with ≥1–2 of
+   the established funding proxies (MOVE, HYG, DXY, EM_ETF). BTC moving while
+   those stay quiet = crypto-idiosyncratic (ETF flows, regulation, exchange
+   liquidations) → log as noise, do not promote to a macro liquidity signal.
+
+**Scope guard:** BTC is a *confirmer*, not a constraint. It has no row in the §2
+matrix, does **not** count toward the "≥4 asset classes aligned" threshold that
+gates a regime call, and never drives a diagnosis by itself. It adds breadth to
+a liquidity/risk read that the other proxies already support. (This is Critical
+Rule 2 — no single-asset conclusions — applied to BTC; see F13.)
+
 ---
 
 ## §4 Failure Modes
@@ -248,8 +335,9 @@ Memorize these. Check against every output before delivering.
 | F10 | Flow-blindness | Did MOVE drop ≥ -5% on the same day risk assets ripped, while I attributed the move to narrative/regime without explicitly weighing vol-budget release? See §3 MOVE section. |
 | F11 | Phase-language without ex-ante anchor | Did I introduce state-change terms ("阶段切换", "承接测试", "裁决窗口", "质变升级") without referencing (a) a phase defined in this protocol or (b) a numerical threshold pre-defined in a prior session's falsification list? If so, replace with descriptive language ("price has crossed X" / "asset has moved beyond Y%") rather than coining new state names. |
 | F12 | Hand-wave trigger | Did I claim a trigger / catalyst / 触发器 without naming the specific news event or asset move? Statements like "无论具体事件是什么", "某种催化剂", "未指明的冲击" are forbidden. If you cannot name the source, rewrite as "price has moved X, cause unknown" — do not assert the existence of a trigger you cannot identify. |
+| F13 | BTC-solo as liquidity | Did I read a BTC move as a liquidity/risk signal without confluence? A BTC move counts only if `move_vol_pct ≥ 65` AND ≥1–2 funding proxies (MOVE/HYG/DXY/EM) agree. BTC alone = crypto-idiosyncratic noise; it has no §2 row and does not count toward the ≥4-asset regime threshold. See §3 BTC subsection. |
 
-Before outputting, run through F1-F12 as a checklist. If any fails, fix the
+Before outputting, run through F1-F13 as a checklist. If any fails, fix the
 output.
 
 The most pernicious of these is F8. The word "regime" naturally flows between

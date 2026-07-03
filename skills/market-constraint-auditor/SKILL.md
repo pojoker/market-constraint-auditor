@@ -1,6 +1,6 @@
 ---
 name: market-constraint-auditor
-version: "1.0.4"
+version: "1.0.5"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
@@ -43,6 +43,13 @@ Determine the user's intent and execute the matching workflow.
 Trigger: User provides asset prices, describes market moves, or says anything
 like "分析盘面" / "市场在交易什么" / "what's driving markets".
 
+> ⚠️ **一次性披露（下一份报告执行后删除本块）**：下一份 Schema A/D 报告需附一段
+> 口径修正说明：(a) 2026-07-03 之前所有报告中的"US 2Y / 前端"读数实为 3 月期
+> 国库券（^IRX 错映射）——历史"前端锚定/前端沉默"论证均基于错误工具；(b) 2026-07-02
+> 的 10Y "+2.58、55 分位、高波动基线内"为单位混合假象，归一后真实动作为
+> +11.3bp、99 分位 signal 级（30Y 同理 +12.1bp、100 分位）；(c) 数据层已修复并
+> 全量回填（真 2Y = 2YY=F 主源 / FRED DGS2 回退），自该报告起口径为真 2Y。
+
 Steps:
 1. **Gather data.** Priority order — stop at the first that succeeds:
    a. **User-provided data:** If the user pastes prices or describes moves, use
@@ -60,24 +67,54 @@ Steps:
       live makes diagnoses reproducible and lets multiple models analyze the
       IDENTICAL data mark (no intra-session drift). It also grounds the
       noise-vs-signal call in statistics rather than recall — see §3 and the
-      mandatory check in step 2. Skip to step 2.
-   c. **fetch_prices.py (live fallback):** If no frozen snapshot data store exists
-      (e.g. the daily capture routine is not set up on this machine), fetch live:
-      ```
-      python3 <skill_dir>/scripts/fetch_prices.py --summary
-      ```
-      Parse the JSON output. This returns DXY, US 2Y/10Y/30Y yields, Gold,
-      Silver, Brent, WTI, NatGas, S&P 500, Nasdaq, Russell 2000, VIX, MOVE,
-      EM_ETF, HYG, TLT, Copper, USDCNY, USDJPY with last price, change%, and
-      direction arrow. `<skill_dir>` is the base directory shown at skill load.
-      Note: live fetch has NO multi-day trend/volatility context — you must not
-      assert multi-day trends or "noise vs signal" from a single live fetch.
-   d. **web_search (last resort):** Only use web_search if both above fail (import
-      error, network timeout, or returns errors for all assets). Search for today's
-      moves for: DXY, US 10Y yield, gold, Brent, S&P 500, VIX.
-2. **Run the constraint matrix.** Compare the observed asset-direction vector
-   against the regime fingerprints in the protocol file. Find the best match and
-   the runner-up.
+      mandatory check in step 3.
+      **Data-quality gate (mandatory, v1.0.5):** before proceeding, read the
+      quality fields the loader now emits and act on them:
+      - `_capture.degraded == true` (assets_ok < 18) → output **Schema D** (数据
+        残缺) or an explicitly downgraded read; never a normal Schema A.
+      - `mark_quality == "intraday_stale"` → the mark is a session-mismatched
+        collage (Modification I). **Do not produce a regime diagnosis**; give a
+        direction-only description and wait for the frozen US-close mark.
+      - `stale_assets` (e.g. 2Y via FRED `prior_close`, lagging one day) → those
+        assets' readings are as-of the prior session; state this in the evidence
+        table and do not build same-day timing arguments on them.
+      - `gap_adjacent == true` on an asset → its `move_vol_pct` is unavailable
+        or discounted; treat as noise-tier evidence.
+      Skip to step 2.
+   c. **fetch_prices.py (capture input only — NOT valid for diagnosis, v1.0.5):**
+      Live intraday fetches produce session-mismatched collages (US cash assets =
+      prior close / thin overnight futures; 24h assets = live Asian-session) —
+      the root cause of Modification I, observed twice in production (2026-05-08,
+      2026-07-03). `scripts/fetch_prices.py` therefore feeds the daily capture
+      routine only. If no frozen snapshot exists, you may run it to give a
+      **direction-only description (no regime call, no Schema A, no confidence
+      stars)** and must say the data is a live mixed-session mark. BTC handling
+      unchanged: confirmer only, `move_vol_pct ≥ 65` bar, never counted toward
+      the ≥4-asset-class threshold (protocol §3, F13).
+   d. **web_search (last resort):** Same restriction as (c): descriptive only,
+      never a regime diagnosis. Search today's moves for: DXY, US 10Y yield,
+      gold, Brent, S&P 500, VIX.
+2. **Run deterministic scoring (mandatory when the frozen data store exists, v1.0.5).**
+   ```
+   python3 <project>/scripts/score_regimes.py [--date YYYYMMDD]
+   ```
+   This mechanically computes, from `data/regime_matrix.json` (ex-ante asset-class
+   grouping + all regime fingerprints incl. guards):
+   - per-regime `match_pct` / aligned / conflicted / noise classes (noise gate
+     applied: only signal-grade moves count; BTC excluded from the class count),
+   - `liquidity_override` (the step-4 check, computed, with per-condition booleans),
+   - `whipsaw_cap` (protocol §3, compared by **regime_row**, mechanically enforced),
+   - `schema_d_suggested` (no row callable → abstention is the default output),
+   - `vol_low_level` and full class states.
+   **The LLM adjudicates ON TOP of this output — it does not re-count.** You may
+   deviate from the mechanical conclusion (e.g. issue Schema A when
+   `schema_d_suggested=true`, or discount a conflicted class as a lagging leg),
+   but every deviation must be stated explicitly in the report with its reason.
+   Silent deviation is a protocol violation. If the data store is unavailable
+   (paths 1a/1c/1d), say so and apply the degraded-language rules.
+3. **Run the constraint matrix (adjudication layer).** Interpret the step-2
+   scores against the regime fingerprints in the protocol file: best match,
+   runner-up, L1/L3 separation, anchor-migration questions (F9), mechanism.
    - **Mandatory noise gate (when stats available):** If the data came from the
      frozen-snapshot path (1b), every "this asset moved / confirms X" claim and
      every multi-day trend claim must be checked against `move_vol_pct` and
@@ -88,14 +125,15 @@ Steps:
      stalling" from arrows alone. This directly closes failure modes F3/F4 at the
      evidence layer. When stats are unavailable (live fallback 1c), explicitly
      downgrade trend/noise language and say so.
-3. **Check for liquidity/funding first.** If risk assets, gold, AND bonds are all
+4. **Check for liquidity/funding first.** If risk assets, gold, AND bonds are all
    falling while USD strengthens, flag liquidity/funding constraint before
    considering other regimes. This is the single most commonly misdiagnosed
-   pattern.
-4. **Output** using the appropriate schema:
+   pattern. (Step 2 already computes this as `liquidity_override` with
+   per-condition booleans — restate its result explicitly in the report.)
+5. **Output** using the appropriate schema:
    - **Schema A (Regime Diagnosis)** — default when conditions support a regime call
-   - **Schema D (Abstention / 不诊断声明)** — when L2 confidence < ★★☆, or in confidence-whipsaw context, or ≥4 patchwork narratives required, or F11/F12 unfixable. See protocol §5 for trigger conditions. **Schema D is not a downgraded Schema A; choose it deliberately when conditions warrant.**
-5. **Auto-save report.** After outputting, save the full report as a Markdown file:
+   - **Schema D (Abstention / 不诊断声明)** — when L2 confidence < ★★☆, or in confidence-whipsaw context, or ≥4 patchwork narratives required, or F11/F12 unfixable. See protocol §5 for trigger conditions. **Schema D is not a downgraded Schema A; choose it deliberately when conditions warrant.** `schema_d_suggested=true` from step 2 makes Schema D the default — issuing Schema A instead requires an explicit stated reason.
+6. **Auto-save report.** After outputting, save the full report as a Markdown file:
    - Directory: `/Volumes/移动硬盘/market-constraint-auditor/reports/`
    - Filename for Schema A: `{YYYYMMDD}--约束诊断-{主导约束代号}.md` (e.g. `20260408--约束诊断-M.md`)
    - Filename for Schema D: `{YYYYMMDD}--不诊断-{触发条件代号}.md` (e.g. `20260408--不诊断-whipsaw.md`)
@@ -111,6 +149,32 @@ Steps:
    - Use the Write tool to create the file. Create the directory first if it
      doesn't exist (`mkdir -p`).
    - Do not notify the user unless the write fails.
+   - **Machine-readable sidecar (mandatory for Schema A, v1.0.5):** alongside the
+     `.md`, write `{same-name}.thresholds.json` per `data/thresholds.schema.json`,
+     transcribing every falsification condition into rules
+     (`asset/metric/op/value/dir/window/consecutive/means`), plus top-level
+     `regime_row` (the matrix row key from step 2). This file is what the daily
+     wrapper's `check_thresholds.py` evaluates at 05:45 — **a report without a
+     sidecar has decorative falsifiers that nothing will ever check.**
+   - **Diagnosis ledger (mandatory for BOTH Schema A and Schema D, v1.0.5):**
+     append one line to `data/diagnosis_log.jsonl`:
+     `{date, schema: "A"|"D", regime|null, regime_row|null, l2, l3, report_file}`.
+     This ledger feeds whipsaw protection (§3, compared by regime_row) and
+     `retro.py` calibration — Schema D days must be recorded too, or the
+     confidence chain has holes.
+7. **Auto-generate HTML + PDF (mandatory).** After the `.md` is written, convert
+   it so every report ships as `.md` + `.html` + `.pdf`. Run:
+   ```
+   python3 <skill_dir>/scripts/convert_md.py "<full path to the .md just written>"
+   ```
+   `<skill_dir>` is the base directory shown at skill load. This writes same-name
+   `.html` and `.pdf` next to the `.md` (requires the `markdown` package and a
+   Google Chrome / Chromium install — PDF is rendered via headless Chrome
+   `--print-to-pdf`, the standard engine for this report family since 2026-04).
+   Do NOT substitute markdown_pdf / PyMuPDF or gstack `make-pdf`; they change the
+   layout. If the conversion errors, keep the `.md` and tell the user PDF
+   generation failed — do not silently skip it. **This step applies to Workflows
+   B and C as well:** always convert the final saved `.md`.
 
 ### Workflow B — Thesis Audit
 
@@ -223,6 +287,16 @@ These override everything else:
     (Abstention) instead of a degraded Schema A. Schema D explicitly refuses
     causal narrative — it has no mechanism section, no falsification list,
     no watchlist. Refusing to narrate is the point. See protocol §5 Schema D.
+15. **Deterministic scoring first; no silent deviation (v1.0.5).** Matrix match
+    counting, the ≥4-asset-class threshold, the liquidity override, whipsaw caps
+    (by regime_row), and Schema D triggering are computed mechanically by
+    `scripts/score_regimes.py` on the frozen mark — the analyst adjudicates on
+    top of that output and never re-counts by hand. Any deviation from the
+    mechanical conclusion must be stated in the report with its reason; silent
+    deviation is a protocol violation. Likewise, every Schema A ships a
+    `.thresholds.json` sidecar and every diagnosis (A or D) appends to
+    `data/diagnosis_log.jsonl` — falsifiers that the daily checker cannot read
+    do not count as falsifiers.
 
 ---
 
