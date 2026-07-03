@@ -1,0 +1,133 @@
+{
+  "asset_classes": {
+    "usd_fx": ["DXY", "USDJPY", "USDCNY"],
+    "rates_front": ["US_2Y_yield"],
+    "rates_long": ["US_10Y_yield", "US_30Y_yield", "TLT"],
+    "precious": ["Gold", "Silver"],
+    "energy": ["Brent", "WTI", "NatGas"],
+    "industrial": ["Copper"],
+    "equities_us": ["SP500", "Nasdaq", "Russell2000"],
+    "em": ["EM_ETF"],
+    "credit": ["HYG"],
+    "vol": ["VIX", "MOVE"],
+    "btc": ["BTC"]
+  },
+  "noise_gate": {
+    "default_move_vol_pct": 50,
+    "BTC_move_vol_pct": 65
+  },
+  "regimes": {
+    "classic_risk_off": {
+      "code": "C",
+      "directions": {
+        "usd_fx": "↑?",
+        "rates_long": "↑",
+        "precious": "↑",
+        "energy": "↓?",
+        "industrial": "↓?",
+        "equities_us": "↓",
+        "em": "↓",
+        "vol": "↑"
+      },
+      "single_day_max_confidence": "★★☆"
+    },
+    "recession_trade": {
+      "code": "G",
+      "directions": {
+        "usd_fx": "↓?",
+        "rates_long": "↑",
+        "precious": "↑?",
+        "energy": "↓",
+        "industrial": "↓",
+        "equities_us": "↓",
+        "em": "↓",
+        "vol": "↑"
+      },
+      "single_day_max_confidence": "★★☆"
+    },
+    "inflation_trade": {
+      "code": "I",
+      "directions": {
+        "rates_long": "↓",
+        "precious": "↑?",
+        "energy": "↑",
+        "industrial": "↑",
+        "equities_us": "↓?",
+        "vol": "↑?"
+      },
+      "single_day_max_confidence": "★★☆"
+    },
+    "liquidity_crunch": {
+      "code": "L",
+      "directions": {
+        "usd_fx": "↑",
+        "rates_long": "↓",
+        "precious": "↓",
+        "energy": "↓?",
+        "industrial": "↓?",
+        "equities_us": "↓",
+        "em": "↓",
+        "vol": "↑↑"
+      },
+      "single_day_max_confidence": "★★★"
+    },
+    "usd_funding_stress": {
+      "code": "F",
+      "directions": {
+        "usd_fx": "↑↑",
+        "precious": "↓?",
+        "equities_us": "↓",
+        "em": "↓",
+        "vol": "↑"
+      },
+      "single_day_max_confidence": "★★★"
+    },
+    "geopolitical_supply_shock": {
+      "code": "S",
+      "directions": {
+        "precious": "↑?",
+        "energy": "↑↑",
+        "equities_us": "↓",
+        "em": "↓",
+        "vol": "↑"
+      },
+      "single_day_max_confidence": "★★★"
+    },
+    "policy_easing_trade": {
+      "code": "P",
+      "directions": {
+        "usd_fx": "↓?",
+        "rates_front": "↑",
+        "rates_long": "↑",
+        "precious": "↑?",
+        "equities_us": "↑",
+        "em": "↑",
+        "vol": "↓"
+      },
+      "single_day_max_confidence": "★★☆"
+    },
+    "sell_america_debasement": {
+      "code": "P",
+      "accept_low_level_vol": true,
+      "directions": {
+        "usd_fx": "↓",
+        "rates_long": "↓",
+        "precious": "↑",
+        "vol": "↓"
+      },
+      "guards": {
+        "rates_front": "anchor_or_not_leading",
+        "equities_us": "signal_down_conflict",
+        "em": "signal_down_conflict",
+        "vs_policy_easing": "policy easing has long-end rally and 2Y leading decline; debasement has long-end selloff and 2Y anchored",
+        "vs_usd_funding": "funding has USD up; debasement has USD down"
+      },
+      "single_day_max_confidence": "★★☆"
+    },
+    "multi_constraint": {
+      "code": "M",
+      "directions": {},
+      "single_day_max_confidence": "★★☆"
+    }
+  }
+}

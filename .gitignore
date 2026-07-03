@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+# 运行时数据（launchd 每日捕获产物，不进版本库）
+data/snapshots/
+data/timeseries*
+data/capture.log
+data/alerts.log
+# 报告产物体量大（PDF/HTML），只纳管机器可读 sidecar
+reports/*
+!reports/*.thresholds.json
+# 工具目录
+.ccglass/
+.claude/
+.gstack/
+scan_reports/

@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "required": ["report_date", "regime", "regime_row", "falsifiers"],
+  "properties": {
+    "report_date": {"type": "string"},
+    "regime": {"type": "string"},
+    "regime_row": {"type": "string"},
+    "falsifiers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset", "metric", "op", "means"],
+        "properties": {
+          "asset": {"type": "string"},
+          "metric": {"enum": ["move_vol_pct", "consec_same_dir", "level", "nd_change"]},
+          "op": {"enum": [">=", "<=", "flip_sign", "cross"]},
+          "value": {"type": ["number", "null"]},
+          "dir": {"type": ["string", "null"]},
+          "window": {"type": "integer", "default": 1},
+          "consecutive": {"type": "integer", "default": 1},
+          "means": {"type": "string"}
+        }
+      }
+    }
+  }
+}
