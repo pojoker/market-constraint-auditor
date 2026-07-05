@@ -59,6 +59,8 @@ def mark_quality(snapshot: dict) -> str:
     ]
     if any(k == "intraday_stale" for k in kinds):
         return "intraday_stale"
+    if snapshot.get("_capture", {}).get("partial_session") is True:
+        return "partial_session"
     return "us_close"
 
 

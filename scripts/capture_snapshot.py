@@ -81,6 +81,24 @@ def trading_date(snapshot: dict) -> str:
     return datetime.fromisoformat(ts).strftime("%Y%m%d")
 
 
+def detect_partial_session(snapshot: dict) -> tuple[bool, str | None]:
+    """Return whether the mark mixes stale US equities with newer assets."""
+    assets = snapshot.get("assets", {})
+    sp500 = assets.get("SP500")
+    if not isinstance(sp500, dict):
+        return False, "SP500 asset missing"
+    sp_as_of = sp500.get("as_of")
+    dated_assets = [
+        (name, value.get("as_of"))
+        for name, value in assets.items()
+        if isinstance(value, dict) and value.get("as_of")
+    ]
+    if not sp_as_of or not dated_assets:
+        return False, "as_of missing for SP500 or all assets"
+    max_as_of = max(as_of for _, as_of in dated_assets)
+    return sp_as_of < max_as_of, None
+
+
 def write_snapshot(snapshot: dict, date_key: str):
     SNAP_DIR.mkdir(parents=True, exist_ok=True)
     path = SNAP_DIR / f"{date_key}.json"
@@ -156,6 +174,9 @@ def main():
 
     date_key = trading_date(snapshot)
     changed = has_data_changed(snapshot, date_key)
+    partial_session, partial_warn = detect_partial_session(snapshot)
+    if partial_warn:
+        log(f"WARN {date_key}: partial_session=false ({partial_warn})")
     snapshot["_capture"] = {
         "captured_at": datetime.now(timezone.utc).isoformat(),
         "assets_ok": len(ok),
@@ -163,6 +184,7 @@ def main():
         "missing": missing,
         "degraded": len(ok) < MIN_ASSETS_OK,
         "data_changed_vs_prev": changed,
+        "partial_session": partial_session,
     }
 
     snap_path = write_snapshot(snapshot, date_key)
@@ -171,7 +193,7 @@ def main():
     log(
         f"{prefix} {date_key}: {len(ok)}/{len(assets)} assets, "
         f"degraded={snapshot['_capture']['degraded']}, missing={missing}, "
-        f"changed={changed}, timeseries={n} days → {snap_path.name}"
+        f"changed={changed}, partial={partial_session}, timeseries={n} days → {snap_path.name}"
     )
 
 

@@ -361,3 +361,101 @@ No capture was run in Round 2. No commit was made.
 
 守卫补充合成验证：2Y signal 级上行/下行均使 rates_front∈conflicted（match% 60→33.3）✅；股指 signal 级上涨不记 conflict ✅。
 双副本 diff 为空 ✅；py_compile 全过 ✅；协议三文件未动、未 commit ✅。
+
+---
+
+# Round 3 (Backlog-1) — 2026-07-05
+
+按 `CODEX-BACKLOG-1.md` 执行。当前沙箱只允许写入 market-auditor repo；`~/bin` 与 `/Volumes/移动硬盘/sector-scan-skill` 均不可写，因此 wrapper 接线与 sector-scan 落盘未完成，见下方复验清单。
+
+## 工单结果
+
+| 工单 | 结果 | 说明 |
+|---|---|---|
+| #1 假日/半日盘守卫 | 部分完成 | `capture_snapshot.py` 写入 `_capture.partial_session`；`load_for_analysis.py` 透出 `mark_quality=partial_session`；`check_thresholds.py` 顶层输出 `mark_quality` 且 partial alert 加后缀；新增 `diagnose_gate.py` 可输出 `SKIP partial session (...)`。`~/bin/market-auditor-diagnose.sh` 因沙箱不可写未接线。 |
+| #3 备份接线 | 部分完成 | 新增 `scripts/backup_step.sh`，实现 `data/` mirror with `--delete`、`reports/` mirror without `--delete`、有 remote 时 best-effort push，失败 rc 保持 0。`~/bin/market-auditor-capture.sh` 因沙箱不可写未接线。 |
+| #5 report_lint.py | 完成（wrapper 未接线） | 新增 `scripts/report_lint.py`，Schema A/D 检查、PASS/FAIL 表、`LINT-FAIL`、exit 1 均实现。`~/bin/market-auditor-diagnose.sh` lint 后置接线因沙箱不可写未完成。 |
+| #6 sector-scan 数据验证移植 | 未完成 | 目标目录 `/Volumes/移动硬盘/sector-scan-skill/skills/sector-scan/scripts/` 不在当前可写根内，写权限探针返回 `operation not permitted`。未修改 sector-scan 源，也未修改安装目录。 |
+
+## 端到端复验清单
+
+1. 工单 #1 partial gate：
+
+```text
+SKIP partial session (20260703)
+SKIP already diagnosed (ledger 20260703 >= mark 20260702)
+```
+
+只读检测真实快照：
+
+```text
+20260702 (False, 'as_of missing for SP500 or all assets')
+20260703 (True, None)
+```
+
+2. 工单 #3 备份子步骤独测（临时 BACKUP_DIR + fake git，未触发真实 capture）：
+
+```text
+backup_rc=0
+data_diff_rc=0
+reports_diff_rc=0
+mkdir: /root: Operation not permitted
+forbidden_backup_rc=0
+```
+
+3. 工单 #5 lint：
+
+```text
+REPORT-LINT reports/20260703--约束诊断-P.md
+| schema_a_sidecar | PASS | sidecar schema ok |
+| schema_a_ledger | PASS | ledger regime_row matches sell_america_debasement |
+| schema_a_mechanical_score | PASS | numeric mechanical score reference found |
+| schema_a_falsifier_section | PASS | 证伪 section found |
+
+missing_sidecar_rc=1
+LINT-FAIL schema_a_sidecar: missing sidecar
+
+no_score_rc=1
+LINT-FAIL schema_a_mechanical_score: missing match%/match_pct/分层确定性 numeric reference
+
+REPORT-LINT reports/20260625--不诊断-商品独跌跨资产冲突.md
+| schema_d_ledger | PASS | ledger has Schema D entry for 20260625 |
+| schema_d_no_forbidden_sections | PASS | no 机制/观察清单 heading |
+```
+
+4. 工单 #6 复验：
+
+```text
+zsh:2: operation not permitted: skills/sector-scan/scripts/.codex_write_probe
+not_writable
+```
+
+因此 9 格对账、异常行 WARN 测试、单标的回归未执行；未跑全量扫描。
+
+5. 编译与边界自检：
+
+```text
+/Users/jowang/miniconda3/bin/python3 -m py_compile scripts/capture_snapshot.py scripts/load_for_analysis.py scripts/check_thresholds.py scripts/report_lint.py scripts/diagnose_gate.py
+bash -n scripts/backup_step.sh
+compile_ok
+```
+
+真实数据文件哈希（执行前后相同）：
+
+```text
+860a6946b47f1d79c30dc5cc2db6cfe86b0b902783b978d2128f1dafef3f4d9d  data/timeseries.jsonl
+95abcdc5859a7f3593cb878faf3b991fd7ca8a8f19ee45f60ce2a52ead9a1cbf  data/diagnosis_log.jsonl
+9193d24ef49759fab2914c3b0acd0885302dc0812691c6022950e953fb251e30  data/snapshots/20260702.json
+c21a7bed3228b0b083e74317f1a7aedb9e50898cd78d9db2a5d719f2fbe465ef  data/snapshots/20260703.json
+```
+
+写权限边界：
+
+```text
+zsh:2: operation not permitted: /Users/jowang/bin/.codex_write_probe
+not_writable
+zsh:2: operation not permitted: skills/sector-scan/scripts/.codex_write_probe
+not_writable
+```
+
+Git status 摘要：market-auditor 存在本次脚本改动，也存在开工前已有的 `.DS_Store`、删除文件、`data/diagnosis_log.jsonl`、`skills/market-constraint-auditor/SKILL.md` 等脏状态；sector-scan status 与开工前一致，未产生新改动。未 commit。

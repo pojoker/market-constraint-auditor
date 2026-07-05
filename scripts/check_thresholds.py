@@ -97,6 +97,7 @@ def main():
     date = args.date
     analysis = load_analysis(date)
     stats = analysis["stats"]["assets"]
+    mark_quality = analysis.get("mark_quality")
     triggered = []
     out = {
         "sidecar": str(sidecar),
@@ -104,6 +105,7 @@ def main():
         "regime": spec.get("regime"),
         "regime_row": spec.get("regime_row"),
         "date": analysis.get("date"),
+        "mark_quality": mark_quality,
         "checks": [],
     }
     for rule in spec.get("falsifiers", []):
@@ -120,7 +122,8 @@ def main():
             triggered.append(row)
     print(json.dumps(out, ensure_ascii=False, indent=2))
     for row in triggered:
-        print(f"ALERT {row['rule']['asset']} {row['rule']['metric']}: {row['rule']['means']}", file=sys.stderr)
+        suffix = " [partial-session mark]" if mark_quality == "partial_session" else ""
+        print(f"ALERT {row['rule']['asset']} {row['rule']['metric']}: {row['rule']['means']}{suffix}", file=sys.stderr)
     return 1 if triggered else 0
 
 

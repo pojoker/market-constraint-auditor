@@ -43,13 +43,6 @@ Determine the user's intent and execute the matching workflow.
 Trigger: User provides asset prices, describes market moves, or says anything
 like "分析盘面" / "市场在交易什么" / "what's driving markets".
 
-> ⚠️ **一次性披露（下一份报告执行后删除本块）**：下一份 Schema A/D 报告需附一段
-> 口径修正说明：(a) 2026-07-03 之前所有报告中的"US 2Y / 前端"读数实为 3 月期
-> 国库券（^IRX 错映射）——历史"前端锚定/前端沉默"论证均基于错误工具；(b) 2026-07-02
-> 的 10Y "+2.58、55 分位、高波动基线内"为单位混合假象，归一后真实动作为
-> +11.3bp、99 分位 signal 级（30Y 同理 +12.1bp、100 分位）；(c) 数据层已修复并
-> 全量回填（真 2Y = 2YY=F 主源 / FRED DGS2 回退），自该报告起口径为真 2Y。
-
 Steps:
 1. **Gather data.** Priority order — stop at the first that succeeds:
    a. **User-provided data:** If the user pastes prices or describes moves, use

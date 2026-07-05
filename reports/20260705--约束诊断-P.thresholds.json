@@ -1,0 +1,105 @@
+{
+  "report_date": "20260705",
+  "regime": "P",
+  "regime_row": "sell_america_debasement",
+  "report_file": "reports/20260705--约束诊断-P.md",
+  "falsifiers": [
+    {
+      "asset": "DXY",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "DXY signal-level rebound; two-day positioning mean-reversion tail, debasement read falsified."
+    },
+    {
+      "asset": "USDCNY",
+      "metric": "consec_same_dir",
+      "op": "flip_sign",
+      "value": null,
+      "dir": "positive",
+      "window": 1,
+      "consecutive": 1,
+      "means": "USDCNY trend flips positive; USD-weak leg falsified."
+    },
+    {
+      "asset": "US_2Y_yield",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "2Y signal-level decline; relabel as policy-easing path repricing."
+    },
+    {
+      "asset": "US_2Y_yield",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "2Y signal-level rise; front-end anchor breaks = whole-curve selloff, sell-america row invalid, reclassify."
+    },
+    {
+      "asset": "TLT",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "Long-duration rally (first non-stale cash read after 7/6) removes the term-premium selloff leg."
+    },
+    {
+      "asset": "Gold",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "Gold signal-level reversal breaks the debasement hedge leg."
+    },
+    {
+      "asset": "Gold",
+      "metric": "consec_same_dir",
+      "op": "flip_sign",
+      "value": null,
+      "dir": "negative",
+      "window": 1,
+      "consecutive": 1,
+      "means": "Gold trend flips negative; hedge continuation failed."
+    },
+    {
+      "asset": "SP500",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 60,
+      "dir": "any",
+      "window": 1,
+      "consecutive": 1,
+      "means": "US equity signal move (first session back 7/6) requires reclassification check; down + weak USD = growth divergence, recheck L."
+    },
+    {
+      "asset": "MOVE",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "paired_with": {
+        "asset": "HYG",
+        "metric": "move_vol_pct",
+        "op": ">=",
+        "value": 50,
+        "dir": "down"
+      },
+      "means": "MOVE jumps while HYG falls; liquidity pressure must be rechecked."
+    }
+  ]
+}
