@@ -283,6 +283,15 @@ when MOVE flattens, it was vol-budget mechanics — not regime.
 This is the most important update to add to your reading: MOVE is no longer
 just a "bond market trust" indicator. It is the cleanest L1 proxy you have.
 
+**Data-freshness precondition (v1.0.6, source-audit finding):** the ^MOVE
+series on Yahoo lags erratically — measured lag distribution {same-day: 3,
+6-sessions: 1}. "Same day" in this rule means the asset's `as_of` equals the
+mark's data date, verified, not assumed. A lagged MOVE reading may still be
+cited as prior-session context but cannot trigger the same-day L1 rule, and a
+MOVE-quiet day with stale as_of is *unknown*, not *calm*. The same applies to
+^TNX/^TYX (t-1 on ~half of capture days) — TLT is the always-same-day long-end
+instrument. Per-source details: `data/SOURCES.md`.
+
 ### BTC as a liquidity / risk-appetite proxy (24/7, high-beta)
 
 BTC is included as a **marginal-liquidity / risk-appetite proxy** (L1 flow / L2

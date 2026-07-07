@@ -256,6 +256,13 @@ These override everything else:
    re-leveraging) **before** the L3 reflation/policy-easing narrative. The same
    L2 pattern is produced by either; you cannot distinguish within one session.
    Cap L3 confidence at ★★☆ and propose a persistence test. See protocol §3.
+   **as_of guard (v1.0.6, source-audit finding):** Yahoo's ^MOVE lags
+   erratically (measured lag distribution {same-day: 3, 6-sessions: 1}), and
+   ^TNX/^TYX are t-1 on roughly half of capture days. Before invoking ANY
+   "same-day" rule on MOVE or the 10Y/30Y yield indices, verify the asset's
+   `as_of` equals the mark's data date; if lagged, downgrade it to
+   prior-session evidence (TLT, always same-day, is the reliable long-end
+   instrument; see data/SOURCES.md).
 10. **Old-regime necessary conditions are not always necessary.** When an asset
     that "should" speak under a candidate regime stays silent (e.g., UST 2Y flat
     during what looks like a regime shift), ask in this order: (a) has the
