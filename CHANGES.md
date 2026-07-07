@@ -585,3 +585,12 @@ Round 4 交付的 2YY 重写在验收中被否决并回滚：**yfinance 2YY=F �
   provenance 拒绝而滞后一天——该步骤已内联进 ~/bin wrapper 修复）
 - 实测：fetch 22 资产（US_2Y=FRED、SHY 当日 as_of）；score_regimes rates_front 类
   正常；双副本一致；SKILL.md 注记 v1.0.6
+
+---
+
+# Round 5 (source audit) — 2026-07-07
+
+- 新增 `scripts/audit_sources.py`（codex 实现 + reviewer 修复联网路径 yfinance MultiIndex bug）与首次全量审计报告 `data/source_audit_20260707.{md,json}`（离线部分 codex 跑、B/C 联网部分 reviewer 补跑）。
+- 新增 `data/SOURCES.md` 语义台账（reviewer 编写）：22 资产 + sector-scan 四源的"身份证"+ 接入军规五条 + 首次普查结论与解读纪律。
+- 边界：timeseries/diagnosis_log sha256 跑前后一致（dbb3efc9/bff4b0f3），无 commit（由协调侧统一提交），协议未动。
+- 核心发现：E 项周末重复变动污染（全资产性 🔴）、能源移仓跳空（月频 🔴）、MOVE 滞后不稳定（🔴 {0:3,6:1}）、10Y/30Y 半数 t+1（🟡）；B 项对期货的 Volume 读数不可靠（解读纪律已写入台账）。

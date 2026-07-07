@@ -1,0 +1,2670 @@
+{
+  "assets": {
+    "BTC": {
+      "A": {
+        "change_days": 120,
+        "longest_unchanged_run": 3,
+        "median_abs_change": 1.87,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 116,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "median_volume": 32765816458.5,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 92,
+        "status": "green",
+        "ticker": "BTC-USD",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": true,
+        "lag_distribution_sp500_sessions": {
+          "0": 4
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260703",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260704",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -4.51,
+            "date": "20260607",
+            "previous_trading_change": -4.51
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "周末/假日重复 change 从 vol 分布剔除后复算。",
+        "repeated_change_ratio": 0.1111,
+        "repeated_change_rows": 1,
+        "status": "yellow"
+      },
+      "F": {
+        "calendar_alignment": "BTC 以 SP500 日历审计；非 SP500 交易日若有重复 change 会在 E 项暴露。",
+        "non_sp500_eligible_rows": 9,
+        "repeated_change_rows": 1
+      }
+    },
+    "Brent": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 2.67,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 112,
+        "zero_change_days": 1,
+        "zero_change_ratio": 0.0085
+      },
+      "B": {
+        "median_volume": 37629.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 63,
+        "status": "green",
+        "ticker": "BZ=F",
+        "zero_volume_ratio": 0.0159
+      },
+      "C": {
+        "candidate_days": [
+          {
+            "change_pct": -11.2773,
+            "date": "2026-03-10",
+            "threshold_pct": 9.8532
+          },
+          {
+            "change_pct": -10.919,
+            "date": "2026-03-23",
+            "threshold_pct": 9.8532
+          },
+          {
+            "change_pct": -14.5247,
+            "date": "2026-04-01",
+            "threshold_pct": 9.8532
+          },
+          {
+            "change_pct": -13.2882,
+            "date": "2026-04-08",
+            "threshold_pct": 9.8532
+          }
+        ],
+        "mad_pct": 2.463309,
+        "note": "需人工核对是否换月日",
+        "polluted_days_estimate": 4,
+        "recommendation": "候选移仓日 change 置 None 后复算 vol 分位。",
+        "status": "yellow",
+        "ticker": "BZ=F"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-1": 3,
+          "0": 1
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260704",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260705",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -2.04,
+            "date": "20260607",
+            "previous_trading_change": -2.04
+          },
+          {
+            "change": 0.93,
+            "date": "20260620",
+            "previous_trading_change": 0.93
+          },
+          {
+            "change": 0.93,
+            "date": "20260621",
+            "previous_trading_change": 0.93
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.3333,
+        "repeated_change_rows": 3,
+        "status": "red"
+      }
+    },
+    "Copper": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 1.44,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 112,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "median_volume": 992.0,
+        "recommendation": "成交偏弱，纳入观察；若影响阈值需换源。",
+        "sample_days": 63,
+        "status": "yellow",
+        "ticker": "HG=F",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "candidate_days": [
+          {
+            "change_pct": 4.8027,
+            "date": "2026-01-29",
+            "threshold_pct": 4.6618
+          },
+          {
+            "change_pct": -4.8116,
+            "date": "2026-05-15",
+            "threshold_pct": 4.6618
+          }
+        ],
+        "mad_pct": 1.165461,
+        "note": "需人工核对是否换月日",
+        "polluted_days_estimate": 2,
+        "recommendation": "候选移仓日 change 置 None 后复算 vol 分位。",
+        "status": "yellow",
+        "ticker": "HG=F"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-1": 3,
+          "0": 1
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260704",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260705",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -3.48,
+            "date": "20260607",
+            "previous_trading_change": -3.48
+          },
+          {
+            "change": -0.59,
+            "date": "20260620",
+            "previous_trading_change": -0.59
+          },
+          {
+            "change": -0.59,
+            "date": "20260621",
+            "previous_trading_change": -0.59
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.3333,
+        "repeated_change_rows": 3,
+        "status": "red"
+      }
+    },
+    "DXY": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 2,
+        "median_abs_change": 0.24,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 108,
+        "zero_change_days": 4,
+        "zero_change_ratio": 0.0342
+      },
+      "B": {
+        "median_volume": 0.0,
+        "recommendation": "换源；没有成交的价格不得进入机械信号。",
+        "sample_days": 63,
+        "status": "red",
+        "ticker": "DX-Y.NYB",
+        "zero_volume_ratio": 1.0
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-1": 2,
+          "0": 2
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260704",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": 0.66,
+            "date": "20260607",
+            "previous_trading_change": 0.66
+          },
+          {
+            "change": -0.0,
+            "date": "20260620",
+            "previous_trading_change": -0.0
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "周末/假日重复 change 从 vol 分布剔除后复算。",
+        "repeated_change_ratio": 0.2222,
+        "repeated_change_rows": 2,
+        "status": "yellow"
+      }
+    },
+    "EM_ETF": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 1.12,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 106,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "median_volume": 28436550.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 62,
+        "status": "green",
+        "ticker": "EEM",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": true,
+        "lag_distribution_sp500_sessions": {
+          "0": 4
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260703",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260704",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -6.53,
+            "date": "20260607",
+            "previous_trading_change": -6.53
+          },
+          {
+            "change": 0.56,
+            "date": "20260614",
+            "previous_trading_change": 0.56
+          },
+          {
+            "change": 3.25,
+            "date": "20260620",
+            "previous_trading_change": 3.25
+          },
+          {
+            "change": 3.25,
+            "date": "20260621",
+            "previous_trading_change": 3.25
+          },
+          {
+            "change": -1.13,
+            "date": "20260628",
+            "previous_trading_change": -1.13
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.8889,
+        "repeated_change_rows": 8,
+        "status": "red"
+      }
+    },
+    "Gold": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 1.21,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 112,
+        "zero_change_days": 1,
+        "zero_change_ratio": 0.0085
+      },
+      "B": {
+        "median_volume": 538.0,
+        "recommendation": "成交偏弱，纳入观察；若影响阈值需换源。",
+        "sample_days": 63,
+        "status": "yellow",
+        "ticker": "GC=F",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "candidate_days": [
+          {
+            "date": "2026-01-27",
+            "diff_pct": 2.4493,
+            "etf_change_pct": 2.4532,
+            "future_change_pct": 0.0039
+          },
+          {
+            "date": "2026-01-30",
+            "diff_pct": 1.092,
+            "etf_change_pct": -10.2742,
+            "future_change_pct": -11.3662
+          },
+          {
+            "date": "2026-02-02",
+            "diff_pct": 2.066,
+            "etf_change_pct": -4.0049,
+            "future_change_pct": -1.9389
+          },
+          {
+            "date": "2026-02-05",
+            "diff_pct": 1.4641,
+            "etf_change_pct": -2.6632,
+            "future_change_pct": -1.1991
+          },
+          {
+            "date": "2026-02-06",
+            "diff_pct": 1.226,
+            "etf_change_pct": 3.0732,
+            "future_change_pct": 1.8472
+          },
+          {
+            "date": "2026-02-25",
+            "diff_pct": 1.2321,
+            "etf_change_pct": -0.2507,
+            "future_change_pct": 0.9814
+          },
+          {
+            "date": "2026-02-26",
+            "diff_pct": 1.4319,
+            "etf_change_pct": 0.8576,
+            "future_change_pct": -0.5743
+          },
+          {
+            "date": "2026-03-03",
+            "diff_pct": 0.9292,
+            "etf_change_pct": -4.4612,
+            "future_change_pct": -3.532
+          },
+          {
+            "date": "2026-03-09",
+            "diff_pct": 0.854,
+            "etf_change_pct": -0.207,
+            "future_change_pct": -1.061
+          },
+          {
+            "date": "2026-03-10",
+            "diff_pct": 1.5864,
+            "etf_change_pct": 1.128,
+            "future_change_pct": 2.7143
+          },
+          {
+            "date": "2026-03-11",
+            "diff_pct": 0.8523,
+            "etf_change_pct": -0.339,
+            "future_change_pct": -1.1913
+          },
+          {
+            "date": "2026-03-12",
+            "diff_pct": 0.9668,
+            "etf_change_pct": -1.9654,
+            "future_change_pct": -0.9986
+          },
+          {
+            "date": "2026-03-16",
+            "diff_pct": 1.0689,
+            "etf_change_pct": -0.089,
+            "future_change_pct": -1.1578
+          },
+          {
+            "date": "2026-03-18",
+            "diff_pct": 0.9422,
+            "etf_change_pct": -3.1637,
+            "future_change_pct": -2.2216
+          },
+          {
+            "date": "2026-03-19",
+            "diff_pct": 1.7927,
+            "etf_change_pct": -4.1215,
+            "future_change_pct": -5.9142
+          },
+          {
+            "date": "2026-03-20",
+            "diff_pct": 2.3971,
+            "etf_change_pct": -3.0557,
+            "future_change_pct": -0.6586
+          },
+          {
+            "date": "2026-03-23",
+            "diff_pct": 1.3792,
+            "etf_change_pct": -2.2594,
+            "future_change_pct": -3.6386
+          },
+          {
+            "date": "2026-03-27",
+            "diff_pct": 0.8468,
+            "etf_change_pct": 3.5094,
+            "future_change_pct": 2.6626
+          },
+          {
+            "date": "2026-03-31",
+            "diff_pct": 1.1027,
+            "etf_change_pct": 3.7894,
+            "future_change_pct": 2.6867
+          },
+          {
+            "date": "2026-04-01",
+            "diff_pct": 1.1677,
+            "etf_change_pct": 1.75,
+            "future_change_pct": 2.9176
+          },
+          {
+            "date": "2026-04-02",
+            "diff_pct": 0.8325,
+            "etf_change_pct": -1.9209,
+            "future_change_pct": -2.7534
+          },
+          {
+            "date": "2026-04-07",
+            "diff_pct": 0.9663,
+            "etf_change_pct": 0.9728,
+            "future_change_pct": 0.0064
+          },
+          {
+            "date": "2026-04-08",
+            "diff_pct": 1.3542,
+            "etf_change_pct": 0.6299,
+            "future_change_pct": 1.9841
+          },
+          {
+            "date": "2026-05-13",
+            "diff_pct": 0.991,
+            "etf_change_pct": -0.5613,
+            "future_change_pct": 0.4297
+          },
+          {
+            "date": "2026-05-20",
+            "diff_pct": 0.879,
+            "etf_change_pct": 1.4338,
+            "future_change_pct": 0.5548
+          },
+          {
+            "date": "2026-06-11",
+            "diff_pct": 3.5699,
+            "etf_change_pct": 3.1342,
+            "future_change_pct": -0.4357
+          },
+          {
+            "date": "2026-06-12",
+            "diff_pct": 2.9917,
+            "etf_change_pct": 0.0569,
+            "future_change_pct": 3.0487
+          },
+          {
+            "date": "2026-06-17",
+            "diff_pct": 2.9175,
+            "etf_change_pct": -2.271,
+            "future_change_pct": 0.6465
+          },
+          {
+            "date": "2026-06-18",
+            "diff_pct": 2.7117,
+            "etf_change_pct": -0.3809,
+            "future_change_pct": -3.0925
+          },
+          {
+            "date": "2026-07-02",
+            "diff_pct": 0.9405,
+            "etf_change_pct": 2.0318,
+            "future_change_pct": 1.0914
+          }
+        ],
+        "cross_check": "GLD",
+        "polluted_days_estimate": 30,
+        "recommendation": "移仓污染显著，候选日 change 置 None 或改用现货/ETF。",
+        "status": "red",
+        "ticker": "GC=F"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-1": 3,
+          "0": 1
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260704",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260705",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -2.47,
+            "date": "20260607",
+            "previous_trading_change": -2.47
+          },
+          {
+            "change": -1.21,
+            "date": "20260620",
+            "previous_trading_change": -1.21
+          },
+          {
+            "change": -1.21,
+            "date": "20260621",
+            "previous_trading_change": -1.21
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.3333,
+        "repeated_change_rows": 3,
+        "status": "red"
+      }
+    },
+    "HYG": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 0.16,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 94,
+        "zero_change_days": 2,
+        "zero_change_ratio": 0.0171
+      },
+      "B": {
+        "median_volume": 35725850.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 62,
+        "status": "green",
+        "ticker": "HYG",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": true,
+        "lag_distribution_sp500_sessions": {
+          "0": 4
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260703",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260704",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -0.5,
+            "date": "20260607",
+            "previous_trading_change": -0.5
+          },
+          {
+            "change": 0.0,
+            "date": "20260614",
+            "previous_trading_change": 0.0
+          },
+          {
+            "change": 0.35,
+            "date": "20260620",
+            "previous_trading_change": 0.35
+          },
+          {
+            "change": 0.35,
+            "date": "20260621",
+            "previous_trading_change": 0.35
+          },
+          {
+            "change": -0.06,
+            "date": "20260628",
+            "previous_trading_change": -0.06
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.8889,
+        "repeated_change_rows": 8,
+        "status": "red"
+      }
+    },
+    "MOVE": {
+      "A": {
+        "change_days": 111,
+        "longest_unchanged_run": 2,
+        "median_abs_change": 3.29,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 113,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "reason": "index/FX has no reliable Volume",
+        "status": "n/a",
+        "ticker": "^MOVE"
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "0": 3,
+          "6": 1
+        },
+        "recommendation": "禁作同日信号，改用同步替代源或明确 prior_close。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-06-26",
+            "date": "20260703",
+            "lag_days": 6,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260704",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "red"
+      },
+      "E": {
+        "eligible_rows": 3,
+        "examples": [
+          {
+            "change": 5.68,
+            "date": "20260607",
+            "previous_trading_change": 5.68
+          },
+          {
+            "change": -0.13,
+            "date": "20260614",
+            "previous_trading_change": -0.13
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "周末/假日重复 change 从 vol 分布剔除后复算。",
+        "repeated_change_ratio": 0.6667,
+        "repeated_change_rows": 2,
+        "status": "yellow"
+      },
+      "F": {
+        "as_of_lag_distribution_sp500_sessions": {
+          "0": 3,
+          "6": 1
+        },
+        "longest_unchanged_run": 2,
+        "zero_change_ratio": 0.0
+      }
+    },
+    "Nasdaq": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 3,
+        "median_abs_change": 0.9,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 115,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "median_volume": 9653745000.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 62,
+        "status": "green",
+        "ticker": "^IXIC",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": true,
+        "lag_distribution_sp500_sessions": {
+          "0": 4
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260703",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260704",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -4.18,
+            "date": "20260607",
+            "previous_trading_change": -4.18
+          },
+          {
+            "change": 0.31,
+            "date": "20260614",
+            "previous_trading_change": 0.31
+          },
+          {
+            "change": 1.91,
+            "date": "20260620",
+            "previous_trading_change": 1.91
+          },
+          {
+            "change": 1.91,
+            "date": "20260621",
+            "previous_trading_change": 1.91
+          },
+          {
+            "change": -0.24,
+            "date": "20260628",
+            "previous_trading_change": -0.24
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.8889,
+        "repeated_change_rows": 8,
+        "status": "red"
+      }
+    },
+    "NatGas": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 2.07,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 108,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "median_volume": 140080.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 63,
+        "status": "green",
+        "ticker": "NG=F",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "candidate_days": [
+          {
+            "change_pct": 25.9104,
+            "date": "2026-01-20",
+            "threshold_pct": 9.8295
+          },
+          {
+            "change_pct": 24.776,
+            "date": "2026-01-21",
+            "threshold_pct": 9.8295
+          },
+          {
+            "change_pct": 28.91,
+            "date": "2026-01-26",
+            "threshold_pct": 9.8295
+          },
+          {
+            "change_pct": -47.4799,
+            "date": "2026-01-29",
+            "threshold_pct": 9.8295
+          },
+          {
+            "change_pct": 11.1281,
+            "date": "2026-01-30",
+            "threshold_pct": 9.8295
+          },
+          {
+            "change_pct": -25.6546,
+            "date": "2026-02-02",
+            "threshold_pct": 9.8295
+          }
+        ],
+        "mad_pct": 2.457376,
+        "note": "需人工核对是否换月日",
+        "polluted_days_estimate": 6,
+        "recommendation": "移仓污染显著，候选日 change 置 None 或改用现货/ETF。",
+        "status": "red",
+        "ticker": "NG=F"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-1": 3,
+          "0": 1
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260704",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260705",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -3.21,
+            "date": "20260607",
+            "previous_trading_change": -3.21
+          },
+          {
+            "change": -1.08,
+            "date": "20260620",
+            "previous_trading_change": -1.08
+          },
+          {
+            "change": -1.08,
+            "date": "20260621",
+            "previous_trading_change": -1.08
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.3333,
+        "repeated_change_rows": 3,
+        "status": "red"
+      }
+    },
+    "Russell2000": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 3,
+        "median_abs_change": 0.77,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 114,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "median_volume": 5476510000.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 62,
+        "status": "green",
+        "ticker": "^RUT",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": true,
+        "lag_distribution_sp500_sessions": {
+          "0": 4
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260703",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260704",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -3.47,
+            "date": "20260607",
+            "previous_trading_change": -3.47
+          },
+          {
+            "change": 0.79,
+            "date": "20260614",
+            "previous_trading_change": 0.79
+          },
+          {
+            "change": 2.12,
+            "date": "20260620",
+            "previous_trading_change": 2.12
+          },
+          {
+            "change": 2.12,
+            "date": "20260621",
+            "previous_trading_change": 2.12
+          },
+          {
+            "change": 0.07,
+            "date": "20260628",
+            "previous_trading_change": 0.07
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.8889,
+        "repeated_change_rows": 8,
+        "status": "red"
+      }
+    },
+    "SHY": {
+      "A": {
+        "change_days": 120,
+        "longest_unchanged_run": 2,
+        "median_abs_change": 0.055,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 91,
+        "zero_change_days": 8,
+        "zero_change_ratio": 0.0667
+      },
+      "B": {
+        "median_volume": 3266750.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 62,
+        "status": "green",
+        "ticker": "SHY",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": true,
+        "lag_distribution_sp500_sessions": {
+          "0": 1
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 1,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 0,
+        "examples": [],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "保持现源，季度复核。",
+        "repeated_change_ratio": 0.0,
+        "repeated_change_rows": 0,
+        "status": "green"
+      }
+    },
+    "SP500": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 0.54,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 110,
+        "zero_change_days": 5,
+        "zero_change_ratio": 0.0427
+      },
+      "B": {
+        "reason": "index/FX has no reliable Volume",
+        "status": "n/a",
+        "ticker": "^GSPC"
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": true,
+        "lag_distribution_sp500_sessions": {
+          "0": 4
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260703",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260704",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -2.64,
+            "date": "20260607",
+            "previous_trading_change": -2.64
+          },
+          {
+            "change": 0.5,
+            "date": "20260614",
+            "previous_trading_change": 0.5
+          },
+          {
+            "change": -0.05,
+            "date": "20260628",
+            "previous_trading_change": -0.05
+          },
+          {
+            "change": 0.0,
+            "date": "20260703",
+            "previous_trading_change": 0.0
+          },
+          {
+            "change": 0.0,
+            "date": "20260704",
+            "previous_trading_change": 0.0
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.6667,
+        "repeated_change_rows": 6,
+        "status": "red"
+      }
+    },
+    "Silver": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 2.61,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 112,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "median_volume": 82.0,
+        "recommendation": "换源；没有成交的价格不得进入机械信号。",
+        "sample_days": 63,
+        "status": "red",
+        "ticker": "SI=F",
+        "zero_volume_ratio": 0.0317
+      },
+      "C": {
+        "candidate_days": [
+          {
+            "date": "2026-01-08",
+            "diff_pct": 1.3745,
+            "etf_change_pct": -1.7616,
+            "future_change_pct": -3.1361
+          },
+          {
+            "date": "2026-01-09",
+            "diff_pct": 1.7483,
+            "etf_change_pct": 3.8302,
+            "future_change_pct": 5.5785
+          },
+          {
+            "date": "2026-01-14",
+            "diff_pct": 1.7697,
+            "etf_change_pct": 7.5827,
+            "future_change_pct": 5.813
+          },
+          {
+            "date": "2026-01-15",
+            "diff_pct": 2.5746,
+            "etf_change_pct": -1.4664,
+            "future_change_pct": 1.1082
+          },
+          {
+            "date": "2026-01-16",
+            "diff_pct": 1.3592,
+            "etf_change_pct": -2.7604,
+            "future_change_pct": -4.1197
+          },
+          {
+            "date": "2026-01-20",
+            "diff_pct": 1.5479,
+            "etf_change_pct": 5.3937,
+            "future_change_pct": 6.9417
+          },
+          {
+            "date": "2026-01-23",
+            "diff_pct": 1.4773,
+            "etf_change_pct": 6.6338,
+            "future_change_pct": 5.1565
+          },
+          {
+            "date": "2026-01-26",
+            "diff_pct": 8.1809,
+            "etf_change_pct": 5.8444,
+            "future_change_pct": 14.0253
+          },
+          {
+            "date": "2026-01-27",
+            "diff_pct": 11.6095,
+            "etf_change_pct": 3.3049,
+            "future_change_pct": -8.3047
+          },
+          {
+            "date": "2026-01-28",
+            "diff_pct": 3.2436,
+            "etf_change_pct": 3.9472,
+            "future_change_pct": 7.1908
+          },
+          {
+            "date": "2026-01-29",
+            "diff_pct": 0.8471,
+            "etf_change_pct": -0.0284,
+            "future_change_pct": 0.8187
+          },
+          {
+            "date": "2026-01-30",
+            "diff_pct": 2.8065,
+            "etf_change_pct": -28.5403,
+            "future_change_pct": -31.3468
+          },
+          {
+            "date": "2026-02-02",
+            "diff_pct": 2.0454,
+            "etf_change_pct": -3.9767,
+            "future_change_pct": -1.9313
+          },
+          {
+            "date": "2026-02-03",
+            "diff_pct": 1.9189,
+            "etf_change_pct": 6.2396,
+            "future_change_pct": 8.1586
+          },
+          {
+            "date": "2026-02-04",
+            "diff_pct": 1.5323,
+            "etf_change_pct": 2.8846,
+            "future_change_pct": 1.3523
+          },
+          {
+            "date": "2026-02-05",
+            "diff_pct": 6.7015,
+            "etf_change_pct": -15.7742,
+            "future_change_pct": -9.0727
+          },
+          {
+            "date": "2026-02-06",
+            "diff_pct": 4.979,
+            "etf_change_pct": 5.2482,
+            "future_change_pct": 0.2692
+          },
+          {
+            "date": "2026-02-09",
+            "diff_pct": 1.3885,
+            "etf_change_pct": 8.3345,
+            "future_change_pct": 6.946
+          },
+          {
+            "date": "2026-02-10",
+            "diff_pct": 1.208,
+            "etf_change_pct": -3.4587,
+            "future_change_pct": -2.2507
+          },
+          {
+            "date": "2026-02-12",
+            "diff_pct": 1.7333,
+            "etf_change_pct": -11.5334,
+            "future_change_pct": -9.8001
+          },
+          {
+            "date": "2026-02-17",
+            "diff_pct": 0.852,
+            "etf_change_pct": -4.8049,
+            "future_change_pct": -5.657
+          },
+          {
+            "date": "2026-02-19",
+            "diff_pct": 1.2404,
+            "etf_change_pct": 1.3126,
+            "future_change_pct": 0.0722
+          },
+          {
+            "date": "2026-02-20",
+            "diff_pct": 1.8177,
+            "etf_change_pct": 7.9003,
+            "future_change_pct": 6.0826
+          },
+          {
+            "date": "2026-02-24",
+            "diff_pct": 2.9288,
+            "etf_change_pct": -1.8493,
+            "future_change_pct": 1.0795
+          },
+          {
+            "date": "2026-02-25",
+            "diff_pct": 2.7674,
+            "etf_change_pct": 1.214,
+            "future_change_pct": 3.9814
+          },
+          {
+            "date": "2026-02-26",
+            "diff_pct": 4.8459,
+            "etf_change_pct": 0.5122,
+            "future_change_pct": -4.3337
+          },
+          {
+            "date": "2026-02-27",
+            "diff_pct": 0.8902,
+            "etf_change_pct": 5.6433,
+            "future_change_pct": 6.5335
+          },
+          {
+            "date": "2026-03-03",
+            "diff_pct": 2.3743,
+            "etf_change_pct": -8.4467,
+            "future_change_pct": -6.0724
+          },
+          {
+            "date": "2026-03-04",
+            "diff_pct": 1.2335,
+            "etf_change_pct": 0.8838,
+            "future_change_pct": -0.3497
+          },
+          {
+            "date": "2026-03-09",
+            "diff_pct": 2.7973,
+            "etf_change_pct": 3.055,
+            "future_change_pct": 0.2577
+          },
+          {
+            "date": "2026-03-10",
+            "diff_pct": 3.6725,
+            "etf_change_pct": 2.3384,
+            "future_change_pct": 6.0108
+          },
+          {
+            "date": "2026-03-11",
+            "diff_pct": 1.7885,
+            "etf_change_pct": -2.7219,
+            "future_change_pct": -4.5104
+          },
+          {
+            "date": "2026-03-12",
+            "diff_pct": 1.3711,
+            "etf_change_pct": -1.8355,
+            "future_change_pct": -0.4644
+          },
+          {
+            "date": "2026-03-16",
+            "diff_pct": 1.5337,
+            "etf_change_pct": 0.7291,
+            "future_change_pct": -0.8046
+          },
+          {
+            "date": "2026-03-17",
+            "diff_pct": 1.2173,
+            "etf_change_pct": -2.1306,
+            "future_change_pct": -0.9132
+          },
+          {
+            "date": "2026-03-18",
+            "diff_pct": 1.2487,
+            "etf_change_pct": -4.1306,
+            "future_change_pct": -2.8819
+          },
+          {
+            "date": "2026-03-19",
+            "diff_pct": 3.8073,
+            "etf_change_pct": -4.3959,
+            "future_change_pct": -8.2032
+          },
+          {
+            "date": "2026-03-20",
+            "diff_pct": 4.1589,
+            "etf_change_pct": -6.3337,
+            "future_change_pct": -2.1748
+          },
+          {
+            "date": "2026-03-23",
+            "diff_pct": 1.9926,
+            "etf_change_pct": 1.5442,
+            "future_change_pct": -0.4484
+          },
+          {
+            "date": "2026-03-25",
+            "diff_pct": 0.8661,
+            "etf_change_pct": 3.5901,
+            "future_change_pct": 4.4562
+          },
+          {
+            "date": "2026-03-27",
+            "diff_pct": 1.6243,
+            "etf_change_pct": 4.3936,
+            "future_change_pct": 2.7693
+          },
+          {
+            "date": "2026-03-30",
+            "diff_pct": 0.994,
+            "etf_change_pct": 0.1261,
+            "future_change_pct": 1.1201
+          },
+          {
+            "date": "2026-03-31",
+            "diff_pct": 1.0649,
+            "etf_change_pct": 7.2733,
+            "future_change_pct": 6.2084
+          },
+          {
+            "date": "2026-04-01",
+            "diff_pct": 1.5758,
+            "etf_change_pct": 0.0,
+            "future_change_pct": 1.5758
+          },
+          {
+            "date": "2026-04-07",
+            "diff_pct": 0.9222,
+            "etf_change_pct": -0.227,
+            "future_change_pct": -1.1492
+          },
+          {
+            "date": "2026-04-08",
+            "diff_pct": 2.4106,
+            "etf_change_pct": 2.3203,
+            "future_change_pct": 4.7309
+          },
+          {
+            "date": "2026-04-10",
+            "diff_pct": 0.9473,
+            "etf_change_pct": 1.0089,
+            "future_change_pct": 0.0616
+          },
+          {
+            "date": "2026-04-22",
+            "diff_pct": 0.8054,
+            "etf_change_pct": 2.7449,
+            "future_change_pct": 1.9395
+          },
+          {
+            "date": "2026-04-27",
+            "diff_pct": 1.138,
+            "etf_change_pct": -0.6687,
+            "future_change_pct": -1.8067
+          },
+          {
+            "date": "2026-05-01",
+            "diff_pct": 0.8417,
+            "etf_change_pct": 2.4452,
+            "future_change_pct": 3.2869
+          },
+          {
+            "date": "2026-05-06",
+            "diff_pct": 1.3376,
+            "etf_change_pct": 6.4027,
+            "future_change_pct": 5.0651
+          },
+          {
+            "date": "2026-05-07",
+            "diff_pct": 1.6664,
+            "etf_change_pct": 2.0961,
+            "future_change_pct": 3.7625
+          },
+          {
+            "date": "2026-05-08",
+            "diff_pct": 1.0985,
+            "etf_change_pct": 1.9693,
+            "future_change_pct": 0.8708
+          },
+          {
+            "date": "2026-05-12",
+            "diff_pct": 1.1204,
+            "etf_change_pct": 0.7051,
+            "future_change_pct": -0.4153
+          },
+          {
+            "date": "2026-05-13",
+            "diff_pct": 3.396,
+            "etf_change_pct": 1.0185,
+            "future_change_pct": 4.4144
+          },
+          {
+            "date": "2026-05-18",
+            "diff_pct": 1.4176,
+            "etf_change_pct": 1.3036,
+            "future_change_pct": -0.1141
+          },
+          {
+            "date": "2026-05-19",
+            "diff_pct": 1.4338,
+            "etf_change_pct": -4.3466,
+            "future_change_pct": -2.9128
+          },
+          {
+            "date": "2026-05-20",
+            "diff_pct": 1.3683,
+            "etf_change_pct": 2.7354,
+            "future_change_pct": 1.3671
+          },
+          {
+            "date": "2026-05-22",
+            "diff_pct": 0.8877,
+            "etf_change_pct": -1.5695,
+            "future_change_pct": -0.6818
+          },
+          {
+            "date": "2026-05-26",
+            "diff_pct": 1.4466,
+            "etf_change_pct": 1.9895,
+            "future_change_pct": 0.5429
+          },
+          {
+            "date": "2026-05-27",
+            "diff_pct": 0.9484,
+            "etf_change_pct": -3.1842,
+            "future_change_pct": -2.2358
+          },
+          {
+            "date": "2026-06-05",
+            "diff_pct": 1.5223,
+            "etf_change_pct": -8.077,
+            "future_change_pct": -6.5547
+          },
+          {
+            "date": "2026-06-10",
+            "diff_pct": 1.5273,
+            "etf_change_pct": -2.2877,
+            "future_change_pct": -0.7604
+          },
+          {
+            "date": "2026-06-11",
+            "diff_pct": 6.5857,
+            "etf_change_pct": 5.4804,
+            "future_change_pct": -1.1053
+          },
+          {
+            "date": "2026-06-12",
+            "diff_pct": 5.4478,
+            "etf_change_pct": 0.7728,
+            "future_change_pct": 6.2206
+          },
+          {
+            "date": "2026-06-17",
+            "diff_pct": 5.5258,
+            "etf_change_pct": -4.3855,
+            "future_change_pct": 1.1402
+          },
+          {
+            "date": "2026-06-18",
+            "diff_pct": 4.4669,
+            "etf_change_pct": -1.8149,
+            "future_change_pct": -6.2818
+          },
+          {
+            "date": "2026-07-01",
+            "diff_pct": 0.8165,
+            "etf_change_pct": 0.2057,
+            "future_change_pct": 1.0222
+          },
+          {
+            "date": "2026-07-02",
+            "diff_pct": 1.7589,
+            "etf_change_pct": 2.6876,
+            "future_change_pct": 0.9287
+          }
+        ],
+        "cross_check": "SLV",
+        "polluted_days_estimate": 69,
+        "recommendation": "移仓污染显著，候选日 change 置 None 或改用现货/ETF。",
+        "status": "red",
+        "ticker": "SI=F"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-1": 3,
+          "0": 1
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260704",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260705",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -6.34,
+            "date": "20260607",
+            "previous_trading_change": -6.34
+          },
+          {
+            "change": -2.03,
+            "date": "20260620",
+            "previous_trading_change": -2.03
+          },
+          {
+            "change": -2.03,
+            "date": "20260621",
+            "previous_trading_change": -2.03
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.3333,
+        "repeated_change_rows": 3,
+        "status": "red"
+      }
+    },
+    "TLT": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 0.4,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 108,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "median_volume": 22682450.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 62,
+        "status": "green",
+        "ticker": "TLT",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": true,
+        "lag_distribution_sp500_sessions": {
+          "0": 4
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260703",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260704",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -0.51,
+            "date": "20260607",
+            "previous_trading_change": -0.51
+          },
+          {
+            "change": -0.24,
+            "date": "20260614",
+            "previous_trading_change": -0.24
+          },
+          {
+            "change": 0.49,
+            "date": "20260620",
+            "previous_trading_change": 0.49
+          },
+          {
+            "change": 0.49,
+            "date": "20260621",
+            "previous_trading_change": 0.49
+          },
+          {
+            "change": 0.01,
+            "date": "20260628",
+            "previous_trading_change": 0.01
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.8889,
+        "repeated_change_rows": 8,
+        "status": "red"
+      }
+    },
+    "USDCNY": {
+      "A": {
+        "change_days": 120,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 0.09,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 100,
+        "zero_change_days": 21,
+        "zero_change_ratio": 0.175
+      },
+      "B": {
+        "reason": "index/FX has no reliable Volume",
+        "status": "n/a",
+        "ticker": "USDCNY=X"
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-3": 1,
+          "-2": 1,
+          "-1": 1,
+          "0": 1
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-04",
+            "date": "20260704",
+            "lag_days": -2,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-05",
+            "date": "20260705",
+            "lag_days": -3,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -0.0,
+            "date": "20260627",
+            "previous_trading_change": -0.0
+          },
+          {
+            "change": -0.0,
+            "date": "20260628",
+            "previous_trading_change": -0.0
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "周末/假日重复 change 从 vol 分布剔除后复算。",
+        "repeated_change_ratio": 0.2222,
+        "repeated_change_rows": 2,
+        "status": "yellow"
+      },
+      "F": {
+        "capture_semantics": "21:45 UTC 捕获晚于在岸 CNY 收盘，as_of 表示亚洲/在岸早收盘标记。",
+        "weekend_rows": [
+          {
+            "as_of": null,
+            "change": -0.13,
+            "date": "20260607",
+            "last": 6.765
+          },
+          {
+            "as_of": null,
+            "change": -0.2,
+            "date": "20260614",
+            "last": 6.7621
+          },
+          {
+            "as_of": null,
+            "change": -0.06,
+            "date": "20260620",
+            "last": 6.7647
+          },
+          {
+            "as_of": null,
+            "change": -0.06,
+            "date": "20260621",
+            "last": 6.7647
+          },
+          {
+            "as_of": null,
+            "change": -0.0,
+            "date": "20260627",
+            "last": 6.7897
+          },
+          {
+            "as_of": null,
+            "change": -0.0,
+            "date": "20260628",
+            "last": 6.7897
+          },
+          {
+            "as_of": "2026-07-04",
+            "change": -0.27,
+            "date": "20260704",
+            "last": 6.7702
+          },
+          {
+            "as_of": "2026-07-05",
+            "change": -0.27,
+            "date": "20260705",
+            "last": 6.7702
+          }
+        ],
+        "zero_change_ratio": 0.175
+      }
+    },
+    "USDJPY": {
+      "A": {
+        "change_days": 120,
+        "longest_unchanged_run": 2,
+        "median_abs_change": 0.225,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 117,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "reason": "index/FX has no reliable Volume",
+        "status": "n/a",
+        "ticker": "JPY=X"
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-3": 1,
+          "-1": 2,
+          "0": 1
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260704",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-05",
+            "date": "20260705",
+            "lag_days": -3,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "保持现源，季度复核。",
+        "repeated_change_ratio": 0.0,
+        "repeated_change_rows": 0,
+        "status": "green"
+      }
+    },
+    "US_10Y_yield": {
+      "A": {
+        "change_days": 113,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 2.6,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 98,
+        "zero_change_days": 1,
+        "zero_change_ratio": 0.0088
+      },
+      "B": {
+        "reason": "index/FX has no reliable Volume",
+        "status": "n/a",
+        "ticker": "^TNX"
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "0": 2,
+          "1": 2
+        },
+        "recommendation": "下游展示 stale/as_of，避免当日同步解读。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-01",
+            "date": "20260703",
+            "lag_days": 1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-01",
+            "date": "20260704",
+            "lag_days": 1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "yellow"
+      },
+      "E": {
+        "eligible_rows": 5,
+        "examples": [
+          {
+            "change": 5.9,
+            "date": "20260607",
+            "previous_trading_change": 5.9
+          },
+          {
+            "change": 2.4,
+            "date": "20260614",
+            "previous_trading_change": 2.4
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "周末/假日重复 change 从 vol 分布剔除后复算。",
+        "repeated_change_ratio": 0.4,
+        "repeated_change_rows": 2,
+        "status": "yellow"
+      }
+    },
+    "US_2Y_yield": {
+      "A": {
+        "change_days": 120,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 3.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 53,
+        "zero_change_days": 12,
+        "zero_change_ratio": 0.1
+      },
+      "B": {
+        "median_volume": null,
+        "recommendation": "无成交量样本，换源或禁用该价格。",
+        "status": "red",
+        "ticker": "DGS2",
+        "zero_volume_ratio": null
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": true,
+        "constant_lag": true,
+        "lag_distribution_sp500_sessions": {
+          "1": 3
+        },
+        "recommendation": "by design 恒滞后：保留 stale/prior_close 标注，由 SHY 承担当日前端方向。",
+        "sample_days": 3,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-01",
+            "date": "20260703",
+            "lag_days": 1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-01",
+            "date": "20260704",
+            "lag_days": 1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260706",
+            "lag_days": 1,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "yellow"
+      },
+      "E": {
+        "eligible_rows": 8,
+        "examples": [
+          {
+            "change": 12.0,
+            "date": "20260607",
+            "previous_trading_change": 12.0
+          },
+          {
+            "change": 4.0,
+            "date": "20260614",
+            "previous_trading_change": 4.0
+          },
+          {
+            "change": -1.0,
+            "date": "20260620",
+            "previous_trading_change": -1.0
+          },
+          {
+            "change": -1.0,
+            "date": "20260621",
+            "previous_trading_change": -1.0
+          },
+          {
+            "change": -2.0,
+            "date": "20260627",
+            "previous_trading_change": -2.0
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 1.0,
+        "repeated_change_rows": 8,
+        "status": "red"
+      }
+    },
+    "US_30Y_yield": {
+      "A": {
+        "change_days": 113,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 2.5,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 94,
+        "zero_change_days": 1,
+        "zero_change_ratio": 0.0088
+      },
+      "B": {
+        "reason": "index/FX has no reliable Volume",
+        "status": "n/a",
+        "ticker": "^TYX"
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "0": 2,
+          "1": 2
+        },
+        "recommendation": "下游展示 stale/as_of，避免当日同步解读。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-01",
+            "date": "20260703",
+            "lag_days": 1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-01",
+            "date": "20260704",
+            "lag_days": 1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "yellow"
+      },
+      "E": {
+        "eligible_rows": 5,
+        "examples": [
+          {
+            "change": 2.1,
+            "date": "20260607",
+            "previous_trading_change": 2.1
+          },
+          {
+            "change": 2.4,
+            "date": "20260614",
+            "previous_trading_change": 2.4
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "周末/假日重复 change 从 vol 分布剔除后复算。",
+        "repeated_change_ratio": 0.4,
+        "repeated_change_rows": 2,
+        "status": "yellow"
+      }
+    },
+    "VIX": {
+      "A": {
+        "change_days": 118,
+        "longest_unchanged_run": 2,
+        "median_abs_change": 3.795,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 105,
+        "zero_change_days": 1,
+        "zero_change_ratio": 0.0085
+      },
+      "B": {
+        "reason": "index/FX has no reliable Volume",
+        "status": "n/a",
+        "ticker": "^VIX"
+      },
+      "C": {
+        "reason": "not a six-asset front-month futures series",
+        "status": "n/a"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-1": 1,
+          "0": 3
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260704",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-02",
+            "date": "20260705",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": 39.68,
+            "date": "20260607",
+            "previous_trading_change": 39.68
+          },
+          {
+            "change": -9.05,
+            "date": "20260614",
+            "previous_trading_change": -9.05
+          },
+          {
+            "change": -2.54,
+            "date": "20260628",
+            "previous_trading_change": -2.54
+          },
+          {
+            "change": -2.65,
+            "date": "20260704",
+            "previous_trading_change": -2.65
+          },
+          {
+            "change": -2.65,
+            "date": "20260705",
+            "previous_trading_change": -2.65
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.5556,
+        "repeated_change_rows": 5,
+        "status": "red"
+      }
+    },
+    "WTI": {
+      "A": {
+        "change_days": 117,
+        "longest_unchanged_run": 4,
+        "median_abs_change": 2.6,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 120,
+        "status": "green",
+        "unique_last_values": 108,
+        "zero_change_days": 0,
+        "zero_change_ratio": 0.0
+      },
+      "B": {
+        "median_volume": 252903.0,
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 63,
+        "status": "green",
+        "ticker": "CL=F",
+        "zero_volume_ratio": 0.0
+      },
+      "C": {
+        "candidate_days": [
+          {
+            "change_pct": 12.2084,
+            "date": "2026-03-06",
+            "threshold_pct": 9.4656
+          },
+          {
+            "change_pct": -11.9447,
+            "date": "2026-03-10",
+            "threshold_pct": 9.4656
+          },
+          {
+            "change_pct": -10.3641,
+            "date": "2026-03-23",
+            "threshold_pct": 9.4656
+          },
+          {
+            "change_pct": 11.4063,
+            "date": "2026-04-02",
+            "threshold_pct": 9.4656
+          },
+          {
+            "change_pct": -16.4143,
+            "date": "2026-04-08",
+            "threshold_pct": 9.4656
+          },
+          {
+            "change_pct": -11.4479,
+            "date": "2026-04-17",
+            "threshold_pct": 9.4656
+          }
+        ],
+        "mad_pct": 2.366392,
+        "note": "需人工核对是否换月日",
+        "polluted_days_estimate": 6,
+        "recommendation": "移仓污染显著，候选日 change 置 None 或改用现货/ETF。",
+        "status": "red",
+        "ticker": "CL=F"
+      },
+      "D": {
+        "by_design": false,
+        "constant_lag": false,
+        "lag_distribution_sp500_sessions": {
+          "-1": 3,
+          "0": 1
+        },
+        "recommendation": "保持现源，季度复核。",
+        "sample_days": 4,
+        "samples": [
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260703",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260704",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-03",
+            "date": "20260705",
+            "lag_days": -1,
+            "sp500_as_of": "2026-07-02"
+          },
+          {
+            "asset_as_of": "2026-07-06",
+            "date": "20260706",
+            "lag_days": 0,
+            "sp500_as_of": "2026-07-06"
+          }
+        ],
+        "status": "green"
+      },
+      "E": {
+        "eligible_rows": 9,
+        "examples": [
+          {
+            "change": -2.69,
+            "date": "20260607",
+            "previous_trading_change": -2.69
+          },
+          {
+            "change": -0.08,
+            "date": "20260620",
+            "previous_trading_change": -0.08
+          },
+          {
+            "change": -0.08,
+            "date": "20260621",
+            "previous_trading_change": -0.08
+          }
+        ],
+        "non_sp500_trading_rows_total": 9,
+        "recommendation": "修复前禁止把重复行纳入 vol 分位。",
+        "repeated_change_ratio": 0.3333,
+        "repeated_change_rows": 3,
+        "status": "red"
+      }
+    }
+  },
+  "generated_at": "2026-07-06T21:45:05.057837+00:00",
+  "offline": false,
+  "rows": 156,
+  "source_files": {
+    "timeseries": "/Volumes/移动硬盘/market-constraint-auditor/data/timeseries.jsonl"
+  }
+}
