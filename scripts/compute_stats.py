@@ -25,6 +25,7 @@ REPO = Path(__file__).resolve().parent.parent
 TIMESERIES = REPO / "data" / "timeseries.jsonl"
 
 YIELD_ASSETS = {"US_2Y_yield", "US_10Y_yield", "US_30Y_yield"}
+FUTURES_ASSETS = {"Gold", "Silver", "Brent", "WTI", "NatGas", "Copper"}
 
 
 def load_series() -> list[dict]:
@@ -93,6 +94,82 @@ def is_degraded(row: dict) -> bool:
     return bool(row.get("_capture", {}).get("degraded", False))
 
 
+def median(values: list[float]):
+    if not values:
+        return None
+    vals = sorted(values)
+    mid = len(vals) // 2
+    if len(vals) % 2:
+        return vals[mid]
+    return (vals[mid - 1] + vals[mid]) / 2
+
+
+def build_points(name: str, raw_history: list[dict]):
+    """Return the per-asset compressed sequence used by all downstream stats."""
+    points = []
+    previous_kept_entry = None
+    previous_kept_key = None
+    source_switch_dates = set()
+    dup_days_excluded = 0
+
+    for pos, r in enumerate(raw_history):
+        if is_degraded(r):
+            continue
+        a = r.get("assets", {}).get(name)
+        if not (a and "last" in a):
+            continue
+
+        raw_change = asset_change(name, a)
+        key = (a["last"], raw_change)
+        if previous_kept_key == key:
+            dup_days_excluded += 1
+            continue
+
+        change = raw_change
+        if source_switched(previous_kept_entry, a):
+            change = None
+            source_switch_dates.add(r.get("date"))
+        points.append((pos, r.get("date"), a["last"], change))
+        previous_kept_entry = a
+        previous_kept_key = key
+
+    return {
+        "points": points,
+        "source_switch_dates": source_switch_dates,
+        "dup_days_excluded": dup_days_excluded,
+        "kept_positions": {p[0] for p in points},
+    }
+
+
+def sp500_gap_between(
+    sp500_new_bar_positions: set[int],
+    asset_kept_positions: set[int],
+    start_pos: int | None,
+    end_pos: int,
+) -> bool:
+    """True if SP500 made a new bar while this asset did not in the interval."""
+    lower = -1 if start_pos is None else start_pos
+    for pos in sp500_new_bar_positions:
+        if lower < pos <= end_pos and pos not in asset_kept_positions:
+            return True
+    return False
+
+
+def is_roll_suspect(name: str, target_change, trailing_changes: list[float]) -> bool:
+    if name not in FUTURES_ASSETS or target_change is None:
+        return False
+    if abs(target_change) <= 2:
+        return False
+    abs_changes = [abs(c) for c in trailing_changes if c is not None]
+    med = median(abs_changes)
+    if med is None:
+        return False
+    mad = median([abs(x - med) for x in abs_changes])
+    if mad is None or mad == 0:
+        return False
+    return abs(target_change) > 4 * mad
+
+
 def compute(rows: list[dict], window: int, target_date: str | None):
     if not rows:
         return {"error": "no timeseries data"}
@@ -109,6 +186,11 @@ def compute(rows: list[dict], window: int, target_date: str | None):
     raw_history = rows[: idx + 1]  # up to and including target
     history = [r for r in raw_history if not is_degraded(r)]
     assets = target.get("assets", {})
+    target_pos = idx
+    compressed_by_asset = {
+        name: build_points(name, raw_history) for name in assets if "last" in assets[name]
+    }
+    sp500_new_bar_positions = compressed_by_asset.get("SP500", {}).get("kept_positions", set())
 
     out = {
         "target_date": target.get("date"),
@@ -125,35 +207,38 @@ def compute(rows: list[dict], window: int, target_date: str | None):
         unit = "bps" if name in YIELD_ASSETS else "%"
 
         # Collect usable history. Degraded days are excluded from baselines.
-        points = []
-        previous_valid_entry = None
-        source_switch_dates = set()
-        for pos, r in enumerate(raw_history):
-            if is_degraded(r):
-                continue
-            a = r.get("assets", {}).get(name)
-            if a and "last" in a:
-                c = asset_change(name, a)
-                if source_switched(previous_valid_entry, a):
-                    c = None
-                    source_switch_dates.add(r.get("date"))
-                points.append((pos, r.get("date"), a["last"], c))
-                previous_valid_entry = a
+        compressed = compressed_by_asset.get(name) or build_points(name, raw_history)
+        points = compressed["points"]
+        source_switch_dates = compressed["source_switch_dates"]
+        dup_days_excluded = compressed["dup_days_excluded"]
+        asset_kept_positions = compressed["kept_positions"]
         lasts = [p[2] for p in points]
         changes = [p[3] for p in points if p[3] is not None]
 
         target_point_index = next((i for i, p in enumerate(points) if p[1] == target.get("date")), None)
         source_switch = target.get("date") in source_switch_dates
-        target_change = None if source_switch else asset_change(name, entry)
+        target_change = points[target_point_index][3] if target_point_index is not None else None
         gap_adjacent = False
         if target_point_index is not None and target_point_index > 0:
-            raw_gap = points[target_point_index][0] - points[target_point_index - 1][0] - 1
-            if raw_gap == 1:
-                gap_adjacent = True
-            elif raw_gap > 1:
-                target_change = None
+            gap_adjacent = sp500_gap_between(
+                sp500_new_bar_positions,
+                asset_kept_positions,
+                points[target_point_index - 1][0],
+                points[target_point_index][0],
+            )
         elif target_point_index is None:
-            gap_adjacent = True
+            previous_pos = None
+            for pos, _date, _last, _change in points:
+                if pos < target_pos:
+                    previous_pos = pos
+                else:
+                    break
+            gap_adjacent = sp500_gap_between(
+                sp500_new_bar_positions,
+                asset_kept_positions,
+                previous_pos,
+                target_pos,
+            )
         if source_switch:
             gap_adjacent = True
 
@@ -167,11 +252,16 @@ def compute(rows: list[dict], window: int, target_date: str | None):
             "source": entry.get("source"),
             "as_of": entry.get("as_of"),
             "session_kind": entry.get("session_kind"),
+            "dup_days_excluded": dup_days_excluded,
         }
 
         # N-day cumulative change (level diff over window)
-        if len(lasts) > window:
-            base = lasts[-(window + 1)]
+        if target_point_index is not None:
+            current_lasts = lasts[: target_point_index + 1]
+        else:
+            current_lasts = lasts
+        if len(current_lasts) > window:
+            base = current_lasts[-(window + 1)]
             if name in YIELD_ASSETS:
                 stat[f"{window}d_change"] = round((last - base) * 100, 1)  # bps
             else:
@@ -184,18 +274,16 @@ def compute(rows: list[dict], window: int, target_date: str | None):
         # Consecutive same-direction days
         consec = 0
         direction = None
+        if target_point_index is not None:
+            point_window = points[: target_point_index + 1]
+        else:
+            point_window = points
         consec_changes = []
-        if points:
-            prev_pos = None
-            for pos, _date, _last, c in points:
-                if c is None:
-                    consec_changes = []
-                    prev_pos = pos
-                    continue
-                if prev_pos is not None and pos - prev_pos - 1 > 1:
-                    consec_changes = []
-                consec_changes.append(c)
-                prev_pos = pos
+        for _pos, _date, _last, c in point_window:
+            if c is None:
+                consec_changes = []
+                continue
+            consec_changes.append(c)
 
         for c in reversed(consec_changes):
             d = 1 if c > 0 else (-1 if c < 0 else 0)
@@ -222,6 +310,9 @@ def compute(rows: list[dict], window: int, target_date: str | None):
         else:
             stat["move_vol_pct"] = None
             stat["noise_flag"] = None  # insufficient history to judge
+
+        if is_roll_suspect(name, target_change, vol_changes):
+            stat["roll_suspect"] = True
 
         out["assets"][name] = stat
 

@@ -594,3 +594,15 @@ Round 4 交付的 2YY 重写在验收中被否决并回滚：**yfinance 2YY=F �
 - 新增 `data/SOURCES.md` 语义台账（reviewer 编写）：22 资产 + sector-scan 四源的"身份证"+ 接入军规五条 + 首次普查结论与解读纪律。
 - 边界：timeseries/diagnosis_log sha256 跑前后一致（dbb3efc9/bff4b0f3），无 commit（由协调侧统一提交），协议未动。
 - 核心发现：E 项周末重复变动污染（全资产性 🔴）、能源移仓跳空（月频 🔴）、MOVE 滞后不稳定（🔴 {0:3,6:1}）、10Y/30Y 半数 t+1（🟡）；B 项对期货的 Volume 读数不可靠（解读纪律已写入台账）。
+
+---
+
+# Round 6 (baseline purge) — 2026-07-07
+
+- `scripts/compute_stats.py`（codex，唯一改动文件）：①E 项修复——逐资产剔除 (last,change) 与上一保留条目相等的重复条目，consec/Nd/vol 全部改在压缩序列上计算（周五→周一天然相邻）；真实数据故障仍标 gap_adjacent；新增 dup_days_excluded 对账字段。②C 项——期货 4×MAD 且 |change|>2% 加 roll_suspect 标记（只标不剔，防吞真实暴动日）。
+- 验收：合成三情形+横盘边界全过；20260706 对照——HYG consec 5→2、TLT −7→−4（虚增压回）、SHY 周一 None→0.05/vol38（A′ 遗留治愈）、各资产 dup_days_excluded 5-11；score_regimes best 行稳定（policy_easing 66.7→60.0），多行 match 大幅移动为去污后真实读数（历史 match 口径断点，解读注意）。
+- 边界：数据 sha256 前后一致、无 commit、协议未动（子代理独立核查）。
+
+## ⚠️ Round 6 验收中的重大新发现：期货幽灵 bar（待立案）
+
+20260703-06 的 Gold 条目 (4187.2998, +1.81%) 在 Yahoo 当前历史中**不存在**（真实 07-02=4112.7、07-03 假日无 bar、07-06=4155.1）。结论：**21:45 UTC 捕获恰逢 CME 维护时段（17:00-18:00 ET），期货日线 bar 为未定版临时值，事后被 Yahoo 修正/删除**；07-06 捕获还把幽灵值标为 as_of=07-06。影响全部 6 个期货资产（可能含 DXY）。07-07 Schema D 报告的 Gold 证据即此幽灵（幸为弃权报告）。Round 6 的 dup 规则碰巧中和了本例，但周一真实金价 +1.03% 同样丢失。修复方向（工单 7 候选）：期货条目标 provisional + 次日捕获时回看校正，或捕获时点/取 bar 逻辑调整。
