@@ -1,7 +1,7 @@
 {
   "asset_classes": {
     "usd_fx": ["DXY", "USDJPY", "USDCNY"],
-    "rates_front": ["US_2Y_yield"],
+    "rates_front": ["US_2Y_yield", "SHY"],
     "rates_long": ["US_10Y_yield", "US_30Y_yield", "TLT"],
     "precious": ["Gold", "Silver"],
     "energy": ["Brent", "WTI", "NatGas"],

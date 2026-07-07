@@ -459,3 +459,129 @@ not_writable
 ```
 
 Git status 摘要：market-auditor 存在本次脚本改动，也存在开工前已有的 `.DS_Store`、删除文件、`data/diagnosis_log.jsonl`、`skills/market-constraint-auditor/SKILL.md` 等脏状态；sector-scan status 与开工前一致，未产生新改动。未 commit。
+
+## Round 4 (2Y rebase)
+
+Scope implemented in workspace copy:
+- `skills/market-constraint-auditor/scripts/fetch_prices.py`: `US_2Y_yield` now tries `2YY=F` hourly (`period=2d`, `interval=1h`) first, computes `prev` from prior `2YY=F` daily close, then falls back to `2YY=F` daily, then emergency FRED `DGS2`.
+- `scripts/backfill_history.py`: added `--rebase-2y-2yy`; it backs up `data/timeseries.jsonl` before attempting to fetch `2YY=F` daily history, and rewrites/removes only `US_2Y_yield` fields when data is available.
+- `scripts/compute_stats.py`: added source-family switching guard; source switches set `today_change=null`, `source_switch=true`, and break consecutive-direction / volatility use of the cross-source jump.
+
+### Acceptance 1 — fetch_prices real run
+
+Command:
+
+```text
+/Users/jowang/miniconda3/bin/python3 skills/market-constraint-auditor/scripts/fetch_prices.py
+```
+
+Actual result: blocked by DNS/network, so the required `source=yfinance:2YY=F(1h)` live proof could not be produced in this environment. No DGS2 value was used to fake the 2YY hourly result.
+
+```text
+US_2Y_yield {"error": "HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Max retries exceeded with url: /graph/fredgraph.csv?id=DGS2 (Caused by NameResolutionError(... Failed to resolve 'fred.stlouisfed.org' ...)); FRED fallback failed: HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Max retries exceeded with url: /graph/fredgraph.csv?id=DGS2 (Caused by NameResolutionError(... Failed to resolve 'fred.stlouisfed.org' ...))", "source": "yfinance:2YY=F"}
+SP500 {"as_of": null, "last": null, "session_kind": null, "source": "yfinance:^GSPC", "stale": null}
+stderr included:
+Failed to get ticker '2YY=F' reason: Failed to perform, curl: (6) Could not resolve host: guce.yahoo.com.
+Failed to get ticker '^GSPC' reason: Failed to perform, curl: (6) Could not resolve host: guce.yahoo.com.
+```
+
+### Acceptance 2 — rebase and DGS2 residual check
+
+Command:
+
+```text
+/Users/jowang/miniconda3/bin/python3 scripts/backfill_history.py --rebase-2y-2yy
+```
+
+Actual result: the command created a backup first, then stopped before rewriting because `2YY=F` daily history could not be fetched. Therefore timeseries was intentionally not rewritten, and DGS2 residuals remain.
+
+```text
+exit=1
+Failed to get ticker '2YY=F' reason: Failed to perform, curl: (6) Could not resolve host: guce.yahoo.com.
+curl_cffi.requests.exceptions.DNSError: Failed to perform, curl: (6) Could not resolve host: guce.yahoo.com.
+```
+
+Backup and unchanged-data evidence:
+
+```text
+/Volumes/移动硬盘/market-constraint-auditor/data/timeseries.backup-20260707-130258.jsonl
+backup_exists=yes
+cmp_latest_intentional_backup=0
+
+total_rows 156
+US_2Y_entries 152
+US_2Y_missing_dates 4 ['20260119', '20260216', '20260403', '20260525']
+source_counts {"FRED:DGS2": 151, "yfinance:2YY=F": 1}
+DGS2_residual_entries 151
+
+grep -n '"source": "FRED:DGS2"' data/timeseries.jsonl | wc -l
+151
+```
+
+### Acceptance 3 — compute_stats source-switch guard
+
+Real current data, `20260706`, now detects the existing `20260705 2YY -> 20260706 DGS2` switch and suppresses the mixed-source daily move:
+
+```text
+/Users/jowang/miniconda3/bin/python3 scripts/compute_stats.py --snapshot 20260706
+
+{"as_of": "2026-07-02", "consec_same_dir": 0, "gap_adjacent": true, "last": 4.14, "move_vol_pct": null, "noise_flag": null, "source": "FRED:DGS2", "source_switch": true, "stale": true, "today_change": null}
+```
+
+Synthetic `DGS2 -> 2YY` switch test:
+
+```text
+20260703 {"consec_same_dir": 0, "gap_adjacent": true, "last": 3.89, "move_vol_pct": null, "noise_flag": null, "source": "yfinance:2YY=F(backfill)", "source_switch": true, "today_change": null}
+20260706 {"consec_same_dir": 1, "gap_adjacent": false, "last": 3.91, "move_vol_pct": null, "noise_flag": null, "source": "yfinance:2YY=F(backfill)", "source_switch": false, "today_change": 2.0}
+```
+
+### Acceptance 4 — duplicate fetch copy, compile, boundaries
+
+Compile:
+
+```text
+/Users/jowang/miniconda3/bin/python3 -m py_compile scripts/backfill_history.py scripts/compute_stats.py skills/market-constraint-auditor/scripts/fetch_prices.py
+```
+
+Dual-copy sync is blocked by the workspace boundary: the runtime copy is outside the writable project root.
+
+```text
+cp skills/market-constraint-auditor/scripts/fetch_prices.py ~/.claude/skills/market-constraint-auditor/scripts/fetch_prices.py
+cp: /Users/jowang/.claude/skills/market-constraint-auditor/scripts/fetch_prices.py: Operation not permitted
+
+diff -u skills/market-constraint-auditor/scripts/fetch_prices.py ~/.claude/skills/market-constraint-auditor/scripts/fetch_prices.py
+--- skills/market-constraint-auditor/scripts/fetch_prices.py
++++ /Users/jowang/.claude/skills/market-constraint-auditor/scripts/fetch_prices.py
+@@
++# runtime copy lacks the new 2YY=F(1h) helper block and dispatch
+```
+
+Boundary checks:
+
+```text
+HEAD 9ac655d
+git diff --name-only -- 'skills/**/SKILL.md' '*protocol*' '*DRAFT-NOTES*'
+# no output
+
+sha256sum data/diagnosis_log.jsonl
+bff4b0f31c3f774e41c562b9013538abd8bc8043d2429c9ec54d58ded93ceae8  data/diagnosis_log.jsonl
+```
+
+Current status still includes pre-existing dirty files plus this round's workspace edits; no commit was made.
+
+## Round 4 附录 — A′ 转向（2026-07-07，reviewer 执行）
+
+Round 4 交付的 2YY 重写在验收中被否决并回滚：**yfinance 2YY=F 日线为稀薄成交僵尸数据**
+（142 天仅 27 天变动，会使噪音门分布退化）。codex 代码本身零缺陷；探测遗漏（只验当日性
+未验历史分布）责任在验收方。经用户裁决改行 **A′ 方案**：
+
+- `US_2Y_yield` 固定 FRED DGS2（恒 t+1、stale/prior_close 标记），fetch 中 2YY 全部摘除
+- 新增资产 **SHY**（1-3Y 美债 ETF）承担前端当日方向，`rates_front: [US_2Y_yield, SHY]`
+  ——与 rates_long 的 TLT 同构；backfill_history 新增 `--add-asset`（SHY 142 天入库）
+  与 `--drop-entry`（清除 20260705 的 2YY 稀薄成交幻影，2Y 序列回归 151 天纯 DGS2）
+- 保留 Round 4 的 compute_stats 跨源防护（实战验证有效）；`--rebase-2y-2yy` 标注废弃
+- 数据回滚路径：timeseries ← codex pre-rebase 备份；snapshots ← ~/Backups 晨镜像；
+  20260705/06 快照由 timeseries 行重建（镜像因 backup 步骤 launchd 执行外置盘脚本被
+  provenance 拒绝而滞后一天——该步骤已内联进 ~/bin wrapper 修复）
+- 实测：fetch 22 资产（US_2Y=FRED、SHY 当日 as_of）；score_regimes rates_front 类
+  正常；双副本一致；SKILL.md 注记 v1.0.6

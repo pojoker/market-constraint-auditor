@@ -24,7 +24,12 @@ except ImportError:
 
 ASSETS = {
     "DXY": "DX-Y.NYB",
-    "US_2Y_yield": "2YY=F",
+    # US_2Y: FRED DGS2 是唯一序列源（恒 t+1、标 stale/prior_close）。
+    # 2YY=F 期货已于 2026-07-07 摘除：流动性稀薄，日线大段重复最后成交价
+    # （142 天仅 27 天变动），进噪音门会使分布退化。前端的"当日方向"由
+    # SHY（1-3 年美债 ETF 价格）承担——与 rates_long 用 TLT 同构。
+    "US_2Y_yield": "FRED:DGS2",
+    "SHY": "SHY",
     "US_10Y_yield": "^TNX",
     "US_30Y_yield": "^TYX",
     "Gold": "GC=F",
@@ -192,7 +197,9 @@ def fetch_snapshot(period="5d", simulate_missing=None):
     }
 
     try:
-        data = download_with_retries(list(ASSETS.values()), period)
+        # US_2Y 走 FRED，不进 yfinance 批量下载
+        tickers = [t for n, t in ASSETS.items() if n != "US_2Y_yield"]
+        data = download_with_retries(tickers, period)
         close = close_frame(data)
     except Exception as exc:
         close = None
@@ -215,6 +222,9 @@ def fetch_snapshot(period="5d", simulate_missing=None):
             result["assets"][name] = {"error": "simulated missing", "source": "simulate"}
             continue
         try:
+            if name == "US_2Y_yield":
+                result["assets"][name] = fallback_yield("US_2Y_yield")
+                continue
             if close is None:
                 raise RuntimeError(result.get("_fetch_error", "download failed"))
             series = series_for(close, name, ticker)
@@ -223,7 +233,7 @@ def fetch_snapshot(period="5d", simulate_missing=None):
             latest = float(series.iloc[-1])
             prev = float(series.iloc[-2]) if len(series) >= 2 else None
             as_of = series.index[-1].strftime("%Y-%m-%d")
-            if name in FRED_SERIES and reference_as_of and as_of < reference_as_of:
+            if name in FRED_SERIES and name != "US_2Y_yield" and reference_as_of and as_of < reference_as_of:
                 result["assets"][name] = fallback_yield(name)
                 result["assets"][name]["fallback_reason"] = f"yfinance stale as_of={as_of}, reference_as_of={reference_as_of}"
                 continue

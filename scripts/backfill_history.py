@@ -25,6 +25,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 import shutil
+from zoneinfo import ZoneInfo
 
 import requests
 import yfinance as yf
@@ -33,12 +34,13 @@ REPO = Path(__file__).resolve().parent.parent
 DATA = REPO / "data"
 SNAP_DIR = DATA / "snapshots"
 TIMESERIES = DATA / "timeseries.jsonl"
+EASTERN = ZoneInfo("America/New_York")
 
 YIELD_ASSETS = {"US_2Y_yield", "US_10Y_yield", "US_30Y_yield"}
 
 # Must match fetch_prices.py exactly.
 ASSETS = {
-    "DXY": "DX-Y.NYB", "US_2Y_yield": "2YY=F", "US_10Y_yield": "^TNX",
+    "DXY": "DX-Y.NYB", "US_2Y_yield": "FRED:DGS2", "SHY": "SHY", "US_10Y_yield": "^TNX",
     "US_30Y_yield": "^TYX", "Gold": "GC=F", "Silver": "SI=F", "Brent": "BZ=F",
     "WTI": "CL=F", "NatGas": "NG=F", "SP500": "^GSPC", "Nasdaq": "^IXIC",
     "Russell2000": "^RUT", "VIX": "^VIX", "MOVE": "^MOVE", "EM_ETF": "EEM",
@@ -121,6 +123,143 @@ def backup_timeseries():
     return backup
 
 
+def bar_date_key(idx):
+    try:
+        ts = idx.to_pydatetime()
+    except AttributeError:
+        return str(idx).replace("-", "")[:8]
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=EASTERN)
+    else:
+        ts = ts.astimezone(EASTERN)
+    return ts.strftime("%Y%m%d")
+
+
+def fetch_2yy_daily_history():
+    data = yf.Ticker("2YY=F").history(period="max", interval="1d", auto_adjust=True)
+    if data is None or data.empty or "Close" not in data:
+        raise RuntimeError("2YY=F daily returned no usable data")
+    close = data["Close"].dropna()
+    rows = []
+    for idx, value in close.items():
+        rows.append((bar_date_key(idx), float(value)))
+    dedup = {}
+    for date_key, value in rows:
+        dedup[date_key] = value
+    rows = sorted(dedup.items())
+    if not rows:
+        raise RuntimeError("2YY=F daily returned no close values")
+    return rows
+
+
+def rebase_2y_2yy():
+    backup = backup_timeseries()
+    if TIMESERIES.exists() and backup is None:
+        raise RuntimeError("failed to back up timeseries before rewrite")
+
+    rows = fetch_2yy_daily_history()
+    by_date = dict(rows)
+    prev_by_date = {}
+    prev = None
+    for date_key, value in rows:
+        prev_by_date[date_key] = prev
+        prev = value
+
+    records = []
+    timeseries_seen = 0
+    timeseries_rewritten = 0
+    timeseries_removed = 0
+    removed_dates = []
+    samples = []
+    if TIMESERIES.exists():
+        for line in TIMESERIES.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            obj = json.loads(line)
+            date_key = obj.get("date")
+            assets = obj.setdefault("assets", {})
+            current = assets.get("US_2Y_yield")
+            if current:
+                timeseries_seen += 1
+                if date_key in by_date:
+                    old_last = current.get("last")
+                    entry = arrow_and_change(
+                        "US_2Y_yield",
+                        by_date[date_key],
+                        prev_by_date.get(date_key),
+                    )
+                    entry.update({
+                        "source": "yfinance:2YY=F(backfill)",
+                        "as_of": f"{date_key[:4]}-{date_key[4:6]}-{date_key[6:]}",
+                        "stale": False,
+                        "session_kind": "us_close",
+                    })
+                    assets["US_2Y_yield"] = entry
+                    timeseries_rewritten += 1
+                    if len(samples) < 8:
+                        samples.append({
+                            "date": date_key,
+                            "old": old_last,
+                            "old_source": current.get("source"),
+                            "new": entry.get("last"),
+                            "new_source": entry.get("source"),
+                        })
+                else:
+                    del assets["US_2Y_yield"]
+                    timeseries_removed += 1
+                    removed_dates.append(date_key)
+            records.append(obj)
+    if records:
+        with open(TIMESERIES, "w", encoding="utf-8") as f:
+            for obj in sorted(records, key=lambda o: o.get("date", "")):
+                f.write(json.dumps(obj, ensure_ascii=False) + "\n")
+
+    snapshot_seen = 0
+    snapshot_rewritten = 0
+    snapshot_removed = 0
+    for path in sorted(SNAP_DIR.glob("*.json")):
+        date_key = path.stem
+        obj = json.loads(path.read_text(encoding="utf-8"))
+        assets = obj.setdefault("assets", {})
+        current = assets.get("US_2Y_yield")
+        if not current:
+            continue
+        snapshot_seen += 1
+        if date_key in by_date:
+            entry = arrow_and_change(
+                "US_2Y_yield",
+                by_date[date_key],
+                prev_by_date.get(date_key),
+            )
+            entry.update({
+                "source": "yfinance:2YY=F(backfill)",
+                "as_of": f"{date_key[:4]}-{date_key[4:6]}-{date_key[6:]}",
+                "stale": False,
+                "session_kind": "us_close",
+            })
+            assets["US_2Y_yield"] = entry
+            snapshot_rewritten += 1
+        else:
+            del assets["US_2Y_yield"]
+            snapshot_removed += 1
+        path.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    print(json.dumps({
+        "backup": str(backup) if backup else None,
+        "2yy_daily_bars": len(rows),
+        "2yy_first_date": rows[0][0],
+        "2yy_last_date": rows[-1][0],
+        "timeseries_2y_entries_before": timeseries_seen,
+        "timeseries_rewritten_days": timeseries_rewritten,
+        "timeseries_removed_2y_entries": timeseries_removed,
+        "timeseries_removed_dates": removed_dates,
+        "snapshot_2y_entries_before": snapshot_seen,
+        "snapshot_rewritten_files": snapshot_rewritten,
+        "snapshot_removed_2y_entries": snapshot_removed,
+        "samples": samples,
+    }, ensure_ascii=False, indent=2))
+
+
 def repair_2y_from_fred():
     rows = fred_series("DGS2")
     if not rows:
@@ -189,11 +328,105 @@ def repair_2y_from_fred():
     }, ensure_ascii=False, indent=2))
 
 
+def _load_timeseries_rows():
+    return [json.loads(l) for l in TIMESERIES.read_text(encoding="utf-8").splitlines() if l.strip()]
+
+
+def _write_timeseries_rows(rows):
+    rows.sort(key=lambda r: r.get("date", ""))
+    with open(TIMESERIES, "w", encoding="utf-8") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+
+def _backup_timeseries():
+    backup = TIMESERIES.with_name(
+        f"timeseries.backup-{datetime.now().strftime('%Y%m%d-%H%M%S')}.jsonl")
+    shutil.copy2(TIMESERIES, backup)
+    return backup
+
+
+def add_asset(name, period="9mo"):
+    """向既有 timeseries/snapshots 增配单个 yfinance 价格资产的历史（不动其它资产）。"""
+    ticker = ASSETS[name]
+    hist = yf.Ticker(ticker).history(period=period, interval="1d", auto_adjust=True)
+    close = hist["Close"].dropna()
+    if close.empty:
+        raise RuntimeError(f"{ticker}: no daily bars")
+    bar_dates = [idx.strftime("%Y%m%d") for idx in close.index]
+    bar_vals = [float(v) for v in close.values]
+    bars = dict(zip(bar_dates, bar_vals))
+    prev_map = {bar_dates[i]: (bar_vals[i - 1] if i > 0 else None) for i in range(len(bar_dates))}
+
+    backup = _backup_timeseries()
+    rows = _load_timeseries_rows()
+    added, skipped = 0, 0
+    for r in rows:
+        d = r.get("date", "")
+        if d not in bars:
+            skipped += 1
+            continue
+        entry = arrow_and_change(name, bars[d], prev_map.get(d))
+        entry.update({
+            "source": f"yfinance:{ticker}(backfill)",
+            "as_of": f"{d[:4]}-{d[4:6]}-{d[6:]}",
+            "stale": False, "session_kind": "us_close",
+        })
+        r.setdefault("assets", {})[name] = entry
+        added += 1
+        snap = SNAP_DIR / f"{d}.json"
+        if snap.exists():
+            s = json.loads(snap.read_text(encoding="utf-8"))
+            s.setdefault("assets", {})[name] = entry
+            snap.write_text(json.dumps(s, ensure_ascii=False, indent=2), encoding="utf-8")
+    _write_timeseries_rows(rows)
+    print(json.dumps({"backup": str(backup), "asset": name, "added_days": added,
+                      "no_bar_days": skipped, "bar_range": [bar_dates[0], bar_dates[-1]]}, ensure_ascii=False))
+
+
+def drop_entry(spec):
+    """--drop-entry ASSET:YYYYMMDD — 从 timeseries 行与快照中移除单个资产条目（治理混源残值）。"""
+    name, date_key = spec.split(":")
+    backup = _backup_timeseries()
+    rows = _load_timeseries_rows()
+    hit = False
+    for r in rows:
+        if r.get("date") == date_key and name in r.get("assets", {}):
+            del r["assets"][name]
+            hit = True
+    _write_timeseries_rows(rows)
+    snap = SNAP_DIR / f"{date_key}.json"
+    snap_hit = False
+    if snap.exists():
+        s = json.loads(snap.read_text(encoding="utf-8"))
+        if name in s.get("assets", {}):
+            del s["assets"][name]
+            snap.write_text(json.dumps(s, ensure_ascii=False, indent=2), encoding="utf-8")
+            snap_hit = True
+    print(json.dumps({"backup": str(backup), "dropped": spec,
+                      "timeseries_hit": hit, "snapshot_hit": snap_hit}, ensure_ascii=False))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--period", default="3mo", help="yfinance period (default 3mo)")
     ap.add_argument("--repair-2y", action="store_true", help="rewrite US_2Y_yield from FRED DGS2")
+    ap.add_argument("--rebase-2y-2yy", action="store_true", help="[已废弃 2026-07-07: 2YY 日线为稀薄成交僵尸数据] rewrite US_2Y_yield from 2YY=F daily bars")
+    ap.add_argument("--add-asset", default=None, help="向既有历史增配单个价格资产（如 SHY）")
+    ap.add_argument("--drop-entry", default=None, help="ASSET:YYYYMMDD 移除单日单资产条目")
     args = ap.parse_args()
+
+    if args.add_asset:
+        add_asset(args.add_asset, args.period if args.period != "3mo" else "9mo")
+        return
+
+    if args.drop_entry:
+        drop_entry(args.drop_entry)
+        return
+
+    if args.rebase_2y_2yy:
+        rebase_2y_2yy()
+        return
 
     if args.repair_2y:
         repair_2y_from_fred()

@@ -60,6 +60,34 @@ def asset_change(name: str, entry: dict):
     return None
 
 
+def source_family(entry: dict):
+    source = entry.get("source") if isinstance(entry, dict) else None
+    if not source:
+        return None
+    if ":" in source:
+        provider, symbol = source.split(":", 1)
+    else:
+        provider, symbol = "", source
+    symbol = symbol.split("(", 1)[0]
+    if symbol.startswith("2YY"):
+        symbol = "2YY"
+    elif symbol.startswith("DGS2"):
+        symbol = "DGS2"
+    elif symbol.startswith("DGS10"):
+        symbol = "DGS10"
+    elif symbol.startswith("DGS30"):
+        symbol = "DGS30"
+    return f"{provider}:{symbol}" if provider else symbol
+
+
+def source_switched(prev_entry: dict | None, entry: dict | None) -> bool:
+    prev_family = source_family(prev_entry or {})
+    family = source_family(entry or {})
+    if not prev_family or not family:
+        return False
+    return prev_family != family
+
+
 def is_degraded(row: dict) -> bool:
     """Legacy rows without _capture are treated as usable."""
     return bool(row.get("_capture", {}).get("degraded", False))
@@ -98,17 +126,25 @@ def compute(rows: list[dict], window: int, target_date: str | None):
 
         # Collect usable history. Degraded days are excluded from baselines.
         points = []
+        previous_valid_entry = None
+        source_switch_dates = set()
         for pos, r in enumerate(raw_history):
             if is_degraded(r):
                 continue
             a = r.get("assets", {}).get(name)
             if a and "last" in a:
-                points.append((pos, r.get("date"), a["last"], asset_change(name, a)))
+                c = asset_change(name, a)
+                if source_switched(previous_valid_entry, a):
+                    c = None
+                    source_switch_dates.add(r.get("date"))
+                points.append((pos, r.get("date"), a["last"], c))
+                previous_valid_entry = a
         lasts = [p[2] for p in points]
         changes = [p[3] for p in points if p[3] is not None]
 
         target_point_index = next((i for i, p in enumerate(points) if p[1] == target.get("date")), None)
-        target_change = asset_change(name, entry)
+        source_switch = target.get("date") in source_switch_dates
+        target_change = None if source_switch else asset_change(name, entry)
         gap_adjacent = False
         if target_point_index is not None and target_point_index > 0:
             raw_gap = points[target_point_index][0] - points[target_point_index - 1][0] - 1
@@ -118,12 +154,15 @@ def compute(rows: list[dict], window: int, target_date: str | None):
                 target_change = None
         elif target_point_index is None:
             gap_adjacent = True
+        if source_switch:
+            gap_adjacent = True
 
         stat = {
             "last": last,
             "today_change": target_change,
             "unit": unit,
             "gap_adjacent": gap_adjacent,
+            "source_switch": source_switch,
             "stale": bool(entry.get("stale", False)),
             "source": entry.get("source"),
             "as_of": entry.get("as_of"),
@@ -150,6 +189,7 @@ def compute(rows: list[dict], window: int, target_date: str | None):
             prev_pos = None
             for pos, _date, _last, c in points:
                 if c is None:
+                    consec_changes = []
                     prev_pos = pos
                     continue
                 if prev_pos is not None and pos - prev_pos - 1 > 1:

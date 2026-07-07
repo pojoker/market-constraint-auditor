@@ -1,6 +1,6 @@
 ---
 name: market-constraint-auditor
-version: "1.0.5"
+version: "1.0.6"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
@@ -71,6 +71,12 @@ Steps:
       - `stale_assets` (e.g. 2Y via FRED `prior_close`, lagging one day) → those
         assets' readings are as-of the prior session; state this in the evidence
         table and do not build same-day timing arguments on them.
+        **US_2Y source note (v1.0.6):** the 2Y series is FRED DGS2 by design —
+        always t+1, honestly stale-marked. Same-day front-end direction comes
+        from **SHY** (1-3Y Treasury ETF price, a `rates_front` class member),
+        mirroring how TLT serves `rates_long`. 2YY=F futures were evaluated and
+        rejected (2026-07-07): too thinly traded — daily closes repeat for weeks,
+        which degenerates the volatility-percentile noise gate.
       - `gap_adjacent == true` on an asset → its `move_vol_pct` is unavailable
         or discounted; treat as noise-tier evidence.
       Skip to step 2.
