@@ -606,3 +606,104 @@ Round 4 交付的 2YY 重写在验收中被否决并回滚：**yfinance 2YY=F �
 ## ⚠️ Round 6 验收中的重大新发现：期货幽灵 bar（待立案）
 
 20260703-06 的 Gold 条目 (4187.2998, +1.81%) 在 Yahoo 当前历史中**不存在**（真实 07-02=4112.7、07-03 假日无 bar、07-06=4155.1）。结论：**21:45 UTC 捕获恰逢 CME 维护时段（17:00-18:00 ET），期货日线 bar 为未定版临时值，事后被 Yahoo 修正/删除**；07-06 捕获还把幽灵值标为 as_of=07-06。影响全部 6 个期货资产（可能含 DXY）。07-07 Schema D 报告的 Gold 证据即此幽灵（幸为弃权报告）。Round 6 的 dup 规则碰巧中和了本例，但周一真实金价 +1.03% 同样丢失。修复方向（工单 7 候选）：期货条目标 provisional + 次日捕获时回看校正，或捕获时点/取 bar 逻辑调整。
+
+---
+
+# Round 7 (ghost bar + wind arbitration) — 2026-07-08
+
+- `scripts/capture_snapshot.py`: added futures ghost signature marking, best-effort Wind arbitration hookup, and one-prior-trading-day futures retro-correction with snapshot/timeseries sync and append-only `data/corrections.log`.
+- `scripts/wind_arbiter.py`: new Wind EDB envelope bridge/parser with one retry for retryable bridge errors and `confirmed` / `acquitted` / `unavailable` verdicts.
+- `scripts/shadow_probe.py`: new standalone yfinance shadow probe for 6 futures + DXY + USDJPY, appending JSON verdicts to `data/shadow_probe.log`.
+- `scripts/threads_tool.py`: added strict schema validation plus add/resolve/expire full lifecycle while preserving the human table + `--- json ---` list shape.
+
+## Acceptance 1 — ghost detection synthetic
+
+```text
+ACCEPTANCE 1 ghost detection
+a_trade_freeze ['Gold'] True
+b_perfect_flat [] None
+c_non_trading [] None
+```
+
+## Acceptance 2 — Wind arbiter mock three states
+
+```text
+ACCEPTANCE 2 wind arbiter mock
+confirmed {'ghost_verdict': 'confirmed', 'official_ref': {'code': 'S0180945', 'prev': 100.0, 'last': 101.0, 'source': 'wind-edb'}}
+acquitted {'ghost_verdict': 'acquitted', 'official_ref': {'code': 'S0180945', 'prev': 100.0, 'last': 100.02, 'source': 'wind-edb'}}
+unavailable {'ghost_verdict': 'unavailable', 'official_ref': {'code': 'S0180945', 'prev': None, 'last': None, 'source': 'wind-edb', 'error': "Command 'wind' timed out after 30 seconds"}}
+```
+
+## Acceptance 3 — retro-correction synthetic
+
+```text
+ACCEPTANCE 3 retro correction
+first_run 1 {'last': 105.0, 'change': 5.0, 'pre_correction': {'last': 100.0, 'change': 0.0}, 'prev': 100.0, 'change_pct': 5.0, 'unit': '%', 'dir': '↑↑↑', 'retro_corrected': True}
+second_run 0 log_lines 1 snapshot_synced True
+```
+
+## Acceptance 4 — shadow_probe mock
+
+```text
+ACCEPTANCE 4 shadow_probe mock
+return 0 stdout {"ts": "2026-07-08T10:53:15.966737+00:00", "date": "20260707", "verdicts": {"Gold": "SAME", "Silver": "SAME", "Copper": "SAME", "Brent": "SAME", "WTI": "SAME", "NatGas": "SAME", "DXY": "SAME", "USDJPY": "SAME"}}
+log_line {"ts": "2026-07-08T10:53:15.966737+00:00", "date": "20260707", "verdicts": {"Gold": "SAME", "Silver": "SAME", "Copper": "SAME", "Brent": "SAME", "WTI": "SAME", "NatGas": "SAME", "DXY": "SAME", "USDJPY": "SAME"}}
+```
+
+## Acceptance 5 — threads_tool lifecycle and bad schema
+
+```text
+ACCEPTANCE 5 threads_tool tmp ledger
+add added: 20260708-gold-ghost-bar-followup
+list_has_json True active_count 1
+resolve resolved: 20260708-gold-ghost-bar-followup
+expire expired: 1
+bad_schema_exit 2
+
+stderr from the expected bad-schema case:
+ERROR  line 1: missing ['resolve_condition']
+```
+
+## Acceptance 6 — compile, data hashes, boundary
+
+Compile:
+
+```text
+/Users/jowang/miniconda3/bin/python3 -m py_compile scripts/capture_snapshot.py scripts/wind_arbiter.py scripts/shadow_probe.py scripts/threads_tool.py
+# no output
+```
+
+Protected data sha256 before tests:
+
+```text
+ad6d884c582a099b12d81428ec25df38cdeade0f59633ba5de40f579f0f4268f data/timeseries.jsonl
+16c6449ee2643fb8bf51b81c852c21031af89258eee232ca61374c2a5cf2c9e4 data/diagnosis_log.jsonl
+4887aac6282fd077cce8e705b0c259f50b21972c663b6bd56d910ef03fc5bb27 data/open_threads.jsonl
+```
+
+Protected data sha256 after tests:
+
+```text
+ad6d884c582a099b12d81428ec25df38cdeade0f59633ba5de40f579f0f4268f data/timeseries.jsonl
+16c6449ee2643fb8bf51b81c852c21031af89258eee232ca61374c2a5cf2c9e4 data/diagnosis_log.jsonl
+4887aac6282fd077cce8e705b0c259f50b21972c663b6bd56d910ef03fc5bb27 data/open_threads.jsonl
+```
+
+No commit was made. Tests used mocked Wind/yfinance paths and tmp ledgers/snapshots only; no real capture was run.
+
+## Acceptance fixes & findings（主会话验收，2026-07-08）
+
+- **验收修正 1（shadow_probe 按日期选 bar）**：原实现取窗口最新 bar；探测将来跑在
+  06:37 北京 = CME 新交易日开盘 37 分钟后，最新 bar 是次日稀薄活盘，8 资产会全数
+  误报 CHANGED。改为按快照数据日匹配 bar，无该日 bar 记 `NO_BAR`。
+- **验收修正 2（记录修订幅度）**：log 增加 `revision_pct`——只记 CHANGED/SAME 会
+  丢掉最有价值的数字。
+- **实网验收（codex 沙箱无网无法做的部分）**：wind_arbiter Gold/NatGas 实网双通过
+  （官方 4167.5→4157.4 / 3.25→3.28，verdict=confirmed）。
+- **🔴 重大发现（首次实跑 shadow_probe）**：Yahoo 期货日线在盘后会被**改写为官方
+  结算价**——Brent 74.16 / WTI 70.44 与 Wind 官方结算一字不差，修订幅度最大 2.44%；
+  金属亦有 0.2-0.9% 修订。含义：①21:45 捕获到的期货 last 永远是临时版；②改动 3 的
+  自愈回填**每天都会触发**（例行定稿，非罕见事件），corrections.log 语义 = 定稿
+  流水而非事故记录；③这反而正确——157 天回填基线本就是定稿值口径，自愈让新增行
+  一天后向同一口径收敛；④当日最新 bar 恒为临时值 = "反转首日信心封顶"哲学在数据
+  层的又一根据。

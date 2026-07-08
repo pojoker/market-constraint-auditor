@@ -7,6 +7,8 @@ data/snapshots/
 data/timeseries.backup-*
 data/capture.log
 data/alerts.log
+data/corrections.log
+data/shadow_probe.log
 # 报告产物体量大（PDF/HTML），只纳管机器可读 sidecar
 reports/*
 !reports/*.thresholds.json
