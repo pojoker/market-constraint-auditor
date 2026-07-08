@@ -1,6 +1,6 @@
 ---
 name: market-constraint-auditor
-version: "1.0.7"
+version: "1.0.8"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
@@ -111,6 +111,16 @@ Steps:
    but every deviation must be stated explicitly in the report with its reason.
    Silent deviation is a protocol violation. If the data store is unavailable
    (paths 1a/1c/1d), say so and apply the degraded-language rules.
+   **悬案核对（open threads，v1.0.8）：** 同时读取跨日悬案账本——前几日诊断
+   留给今天的未决问题。无头会话没有对话记忆，账本就是记忆：
+   ```
+   python3 <project>/scripts/threads_tool.py --list
+   ```
+   （工具不可用时直接 Read `data/open_threads.jsonl`。）每条 `status:"open"`
+   的悬案必须在本次诊断中三选一：**了结**（今日数据足以回答——在报告中给出
+   裁决与证据）、**顺延**（条件未满足——说明还差什么）、**过期**（超过
+   expires 仍无法裁决——注销并说明）。有活跃悬案时，报告正文含一个简短的
+   「悬案」小节，逐条记录当日处置。
 3. **Run the constraint matrix (adjudication layer).** Interpret the step-2
    scores against the regime fingerprints in the protocol file: best match,
    runner-up, L1/L3 separation, anchor-migration questions (F9), mechanism.
@@ -161,6 +171,13 @@ Steps:
      This ledger feeds whipsaw protection (§3, compared by regime_row) and
      `retro.py` calibration — Schema D days must be recorded too, or the
      confidence chain has holes.
+   - **悬案账本回写（mandatory for BOTH schemas，v1.0.8）：** 更新
+     `data/open_threads.jsonl`（优先用 `threads_tool.py`，不可用时直接编辑）：
+     已了结的悬案标 `resolved` 并写一句 `resolution` + `resolved_on`；本次
+     诊断中新出现的未决问题（等待验证的数据、无法裁决的分歧、待观察的假设）
+     append 新条目（`id`/`opened`/`question`/`resolve_condition`/`expires`，
+     expires 一般 ≤ 3-5 个交易日，`status:"open"`）。没有这一步，明天的
+     诊断会重新失忆——与台账同级，不可省略。
 7. **Auto-generate HTML + PDF (mandatory).** After the `.md` is written, convert
    it so every report ships as `.md` + `.html` + `.pdf`. Run:
    ```
