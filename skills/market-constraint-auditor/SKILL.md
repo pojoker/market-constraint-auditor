@@ -1,6 +1,6 @@
 ---
 name: market-constraint-auditor
-version: "1.0.6"
+version: "1.0.7"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
@@ -309,5 +309,32 @@ These override everything else:
 ## Language
 
 Default output language is Chinese (matching the user's language). If the user
-writes in English, respond in English. Technical terms (DXY, VIX, MOVE, Brent)
-stay in English regardless.
+writes in English, respond in English. Asset tickers and index names (DXY, VIX,
+MOVE, Brent, TLT, HYG) stay in English regardless.
+
+### 中文写作纪律（v1.0.7，用户反馈 2026-07-08）
+
+报告的第一读者是中文母语、非交易员背景的人。机械打分器与协议的内部字段名
+（callable / leg / aligned / conflicted / whipsaw / gap / signal / stale）是
+代码词汇，**禁止直译进正文**——"腿""可召唤"这类直译无法阅读。规则：
+
+1. **正文用中文语义表达，机器字段名只能放括号里作锚点**（如「证据达标
+   （callable=true）」），不得独立成句。对照表（左禁右用）：
+
+   | 禁用直译 | 应写成 |
+   |---|---|
+   | 腿 / XX腿 | 「XX一侧的证据」；判别腿 →「区分两个判断的关键证据」 |
+   | 可召唤 | 「达到正式判断门槛」，首次出现注明门槛内容（≥4 类资产显著同向、无显著反向证据） |
+   | signal 级 | 「显著波动」，首次出现注明标准（超过该资产自身波动分布中位，分位 ≥50） |
+   | 噪音级 / 噪音门 | 「波动过小、不作证据」（低于自身第 50 百分位） |
+   | gap 隔离 | 「数据断档，当日读数暂不采信」 |
+   | whipsaw 封顶 | 「反转首日信心上限」（防单日翻脸，连续第 2 天同向才能加码） |
+   | stale | 「数据滞后（截至前一交易日）」 |
+   | 熊陡 | 保留可用，但首次出现须解释（长端收益率升得比短端快） |
+
+2. **首次出现讲人话。** 任何体系内术语（含波动分位、consec 连续天数）在一份
+   报告里第一次出现时，用一句话解释它的含义；拿不准读者是否懂，就当不懂。
+3. **中文语序。** 不保留英文从句结构的直译句式；按中文表达习惯重写，短句
+   优先。
+4. **报告末尾附「术语速查」**：一张 3–6 行小表，只收录本报告实际用到的体系
+   术语，每条一句大白话。Schema A 必附；Schema D 为保持简短可省。
