@@ -707,3 +707,109 @@ No commit was made. Tests used mocked Wind/yfinance paths and tmp ledgers/snapsh
   流水而非事故记录；③这反而正确——157 天回填基线本就是定稿值口径，自愈让新增行
   一天后向同一口径收敛；④当日最新 bar 恒为临时值 = "反转首日信心封顶"哲学在数据
   层的又一根据。
+
+---
+
+# Round 8 (plumbing) — 2026-07-08
+
+- `scripts/fetch_plumbing.py`: new best-effort NYFed/FRED plumbing fetcher for SOFR, ONRRP, SRF, IORB, TGA, WALCL; writes/upserts JSONL rows, supports mocked `--backfill`, and derives SOFR-IORB spread plus net liquidity with component dates disclosed.
+- `scripts/load_for_analysis.py`: output now includes top-level `plumbing`, loaded from the latest `data/plumbing.jsonl` row when present; each series entry gets `lag_days` versus the mark date. Missing/empty plumbing file returns `null`.
+- Boundary: no protocol files touched; no real NYFed/FRED calls in tests; no `data/plumbing.jsonl` produced under repo data during acceptance; no commit.
+
+## Acceptance 1 — mock three sources normal
+
+```text
+ACCEPTANCE 1 mock normal
+keys ['IORB', 'ONRRP', 'SOFR', 'SRF', 'TGA', 'WALCL']
+SOFR {'as_of': '2026-07-07', 'source': 'nyfed-api', 'unit': '%', 'value': 4.34}
+ONRRP {'as_of': '2026-07-08', 'source': 'nyfed-api', 'unit': '$bn', 'value': 125.0}
+TGA {'as_of': '2026-06-30', 'source': 'fred:WTREGEN', 'unit': '$bn', 'value': 830.0}
+WALCL {'as_of': '2026-06-30', 'source': 'fred:WALCL', 'unit': '$mn', 'value': 6730000.0}
+upsert {'total_rows': 1, 'changed_rows': 1}
+```
+
+## Acceptance 2 — mock single-source failure and all-dead rc
+
+```text
+ACCEPTANCE 2 single source failure
+success_rc 0 errors ['IORB', 'TGA', 'WALCL']
+IORB {'value': None, 'as_of': None, 'unit': '%', 'source': 'fred:IORB', 'error': 'mock fred down'}
+SOFR {'value': 4.34, 'as_of': '2026-07-07', 'unit': '%', 'source': 'nyfed-api'}
+all_dead_rc 1 errors_count 6
+```
+
+## Acceptance 3 — derived synthetic
+
+```text
+ACCEPTANCE 3 derived synthetic
+aligned {'sofr_iorb_spread_bp': {'value': 4.0, 'unit': 'bp', 'as_of': '2026-07-07'}, 'net_liquidity_bn': {'value': 5745.0, 'unit': '$bn', 'components_as_of': {'WALCL': '2026-07-03', 'TGA': '2026-07-01', 'ONRRP': '2026-07-08'}}}
+misaligned {'value': None, 'unit': 'bp', 'as_of': None, 'components_as_of': {'SOFR': '2026-07-07', 'IORB': '2026-07-06'}}
+```
+
+## Acceptance 4 — backfill mock idempotence
+
+```text
+ACCEPTANCE 4 backfill mock
+rows_constructed 30 total_first 30 changed_first 30 total_second 30 changed_second 0
+first_date 20260601 last_date 20260630
+```
+
+## Acceptance 5 — load_for_analysis two states and regression
+
+```text
+ACCEPTANCE 5 load_for_analysis states
+with_file_SOFR {'value': 4.34, 'as_of': '2026-07-07', 'unit': '%', 'source': 'nyfed-api', 'lag_days': 1}
+with_file_derived_keys ['net_liquidity_bn', 'sofr_iorb_spread_bp']
+missing_file None
+cli_plumbing None
+old_new_diff_only_plumbing True
+```
+
+## Acceptance 6 — compile, hashes, boundary
+
+Compile:
+
+```text
+/Users/jowang/miniconda3/bin/python3 -m py_compile scripts/fetch_plumbing.py scripts/load_for_analysis.py
+# no output
+```
+
+Protected data sha256 before tests:
+
+```text
+ad6d884c582a099b12d81428ec25df38cdeade0f59633ba5de40f579f0f4268f  data/timeseries.jsonl
+16c6449ee2643fb8bf51b81c852c21031af89258eee232ca61374c2a5cf2c9e4  data/diagnosis_log.jsonl
+4887aac6282fd077cce8e705b0c259f50b21972c663b6bd56d910ef03fc5bb27  data/open_threads.jsonl
+```
+
+Protected data sha256 after tests:
+
+```text
+ad6d884c582a099b12d81428ec25df38cdeade0f59633ba5de40f579f0f4268f  data/timeseries.jsonl
+16c6449ee2643fb8bf51b81c852c21031af89258eee232ca61374c2a5cf2c9e4  data/diagnosis_log.jsonl
+4887aac6282fd077cce8e705b0c259f50b21972c663b6bd56d910ef03fc5bb27  data/open_threads.jsonl
+```
+
+Boundary check:
+
+```text
+data/plumbing.jsonl absent
+M CHANGES.md
+M scripts/load_for_analysis.py
+?? scripts/fetch_plumbing.py
+```
+
+## Round 8 acceptance fixes & live验收（主会话，2026-07-09）
+
+- **验收修正 1（normalize_bn 单位换算）**：原按数量级猜单位（≥1e9 除 1e9、≥1e4
+  除 1e3）——NYFed totalAmtAccepted 恒为美元原值，当日接纳额 < $1bn 时会错三个
+  数量级（ONRRP 缓冲池现仅 $1-4.5bn，随时可能跌破）。统一 ≥1e6 → /1e9。
+- **验收修正 2（SRF 端点）**：/rp/repo/propositions 返回 400；实测正确路径
+  /rp/results/search.json + operationTypes=Repo。同日多场操作改为按日求和。
+- **实网验收**：NYFed 三序列直证（SOFR 3.62%@07-07、ONRRP 4.484bn@07-07、
+  SRF 0.0@07-08——07-07 实有一笔 $3M SRF 使用被正确捕获）；FRED 三序列在
+  白天时段超时 → null+error+rc=0，降级行为实网验证即验收第 2 项活体版；
+  load_for_analysis plumbing 块（值+as_of+lag_days）实测正确。
+- IORB/TGA/WALCL 数值对账待夜窗（FRED 生产时段）补齐；--backfill 730 实跑、
+  SOURCES.md 登记、协议侧 v1.0.9 接线为后续步骤。capture wrapper 已加 4.5 步
+  （~/bin，不在本 repo）。

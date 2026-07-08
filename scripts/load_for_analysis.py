@@ -19,11 +19,13 @@ import argparse
 import json
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 SNAP_DIR = REPO / "data" / "snapshots"
 COMPUTE = REPO / "scripts" / "compute_stats.py"
+PLUMBING = REPO / "data" / "plumbing.jsonl"
 
 
 def latest_snapshot_date() -> str | None:
@@ -69,6 +71,54 @@ def stale_assets(snapshot: dict) -> list[str]:
         name for name, value in snapshot.get("assets", {}).items()
         if isinstance(value, dict) and value.get("stale") is True
     ]
+
+
+def parse_day(value: str | None):
+    if not value:
+        return None
+    for fmt in ("%Y%m%d", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(value[:10], fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def lag_days(as_of: str | None, mark_date: str) -> int | None:
+    left = parse_day(as_of)
+    right = parse_day(mark_date)
+    if left is None or right is None:
+        return None
+    return (right - left).days
+
+
+def load_plumbing(mark_date: str, path: Path = PLUMBING) -> dict | None:
+    if not path.exists():
+        return None
+    latest = None
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if latest is None or str(row.get("date", "")) > str(latest.get("date", "")):
+            latest = row
+    if latest is None:
+        return None
+    out = dict(latest)
+    series = {}
+    for key, value in latest.get("series", {}).items():
+        if isinstance(value, dict):
+            item = dict(value)
+            item["lag_days"] = lag_days(item.get("as_of"), mark_date)
+            series[key] = item
+        else:
+            series[key] = value
+    out["series"] = series
+    return out
 
 
 def print_summary(merged: dict):
@@ -136,6 +186,7 @@ def main():
         "stats": stats,
         "mark_quality": mark_quality(snapshot),
         "stale_assets": stale_assets(snapshot),
+        "plumbing": load_plumbing(date_key),
     }
 
     if args.summary or not sys.stdout.isatty():
