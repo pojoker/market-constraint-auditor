@@ -28,17 +28,23 @@ def gate(repo: Path, now: datetime | None = None) -> str:
         return f"SKIP partial session ({date_key})"
     if not cap.get("data_changed_vs_prev", False):
         return f"SKIP market closed (data unchanged, {date_key})"
-    ledger = repo / "data/diagnosis_log.jsonl"
-    ledger_max = ""
-    if ledger.exists():
-        for line in ledger.read_text(encoding="utf-8").splitlines():
-            try:
-                date = json.loads(line).get("date", "")
-            except Exception:
-                continue
-            ledger_max = max(ledger_max, date or "")
-    if ledger_max >= date_key:
-        return f"SKIP already diagnosed (ledger {ledger_max} >= mark {date_key})"
+    # Dedup on the DATA date, not the ledger's `date`. The snapshot filename
+    # stem == equity-anchor as_of == data date (verified invariant). The ledger
+    # `date`, however, is the Beijing run-date = data date + 1, so comparing the
+    # two collides on consecutive trading days (Mon-close diagnosed on Tue morning
+    # is labeled Tue; Tue's own capture is also 20260707 -> false "already
+    # diagnosed"). diagnosed_marks.txt records the data date of every completed
+    # diagnosis, so both sides live in data-date space. The wrapper appends to it
+    # only after a successful run (rc==0), so a crashed diagnosis is retried.
+    diagnosed = repo / "data/diagnosed_marks.txt"
+    diag_max = ""
+    if diagnosed.exists():
+        for line in diagnosed.read_text(encoding="utf-8").splitlines():
+            d = line.strip()
+            if len(d) == 8 and d.isdigit():
+                diag_max = max(diag_max, d)
+    if diag_max >= date_key:
+        return f"SKIP already diagnosed (marks {diag_max} >= mark {date_key})"
     return f"GO {date_key}"
 
 

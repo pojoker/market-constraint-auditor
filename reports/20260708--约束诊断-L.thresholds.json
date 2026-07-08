@@ -1,0 +1,78 @@
+{
+  "report_date": "20260708",
+  "regime": "L",
+  "regime_row": "liquidity_crunch",
+  "report_file": "reports/20260708--约束诊断-L.md",
+  "falsifiers": [
+    {
+      "asset": "TLT",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "长端获避险买盘（TLT signal 级反弹），债券不再随股被抛 → 转 classic risk-off，流动性/去杠杆读数证伪。"
+    },
+    {
+      "asset": "SHY",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "前端获买盘、收益率下行；全曲线抛售腿消解，L 的‘抢现金卖一切’机制减弱。"
+    },
+    {
+      "asset": "DXY",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "美元 signal 级反转向下；今日 USD↑腿失效，回退 sell_america_debasement，反转判定为单日均值回归。"
+    },
+    {
+      "asset": "Gold",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "黄金（干净非-gap 时段）signal 级上行 → 偏 F（美元短缺、非普遍去杠杆）而非 L；主判断需从 L 改判 F。"
+    },
+    {
+      "asset": "MOVE",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "利率波动回落；L1 降杠杆机械腿消退，今日的全曲线抛售或为单日波动脉冲而非持续 regime。"
+    },
+    {
+      "asset": "HYG",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "信用补跌至 signal 级 → 系统性挤兑证据补齐（确认腿，非证伪）；若持续抗跌则今日‘挤兑’成色存疑。"
+    },
+    {
+      "asset": "Brent",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "次日非-gap 时段若证实能源 signal 级续涨 → 叠加 S（能源/供给）overlay，纯 L 读数需修正（今日 +5% 被 gap 门隔离待验）。"
+    }
+  ]
+}
