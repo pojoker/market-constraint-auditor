@@ -2,7 +2,9 @@
 __pycache__/
 # 运行时数据（launchd 每日捕获产物，不进版本库）
 data/snapshots/
-data/timeseries*
+# timeseries.jsonl 是全系统核心资产（所有分位数的分母），2026-07-08 起纳入
+# 版本库做异地副本（≈6KB/日增量）；本地恢复用的 backup 文件仍不入库
+data/timeseries.backup-*
 data/capture.log
 data/alerts.log
 # 报告产物体量大（PDF/HTML），只纳管机器可读 sidecar
