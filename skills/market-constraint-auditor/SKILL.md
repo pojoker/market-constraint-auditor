@@ -1,6 +1,6 @@
 ---
 name: market-constraint-auditor
-version: "1.0.8"
+version: "1.0.9"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
@@ -79,6 +79,19 @@ Steps:
         which degenerates the volatility-percentile noise gate.
       - `gap_adjacent == true` on an asset → its `move_vol_pct` is unavailable
         or discounted; treat as noise-tier evidence.
+      - **管道数量层（`plumbing` 块，v1.0.9）**——loader 顶层的量证据（NYFed/
+        FRED 官方），消费纪律：
+        · **L/F 判别**：`SRF` 任何非零值 = 银行敲窗的融资告急直证；SOFR−IORB
+          利差转正且持续 = 回购缺钱（F 的管道直证）。两者安静时，价格层的 F
+          判断必须降权并写明"无管道证据"。`ONRRP` 是系统缓冲池——趋近于零 =
+          垫子已抽干、冲击传导更快（脆弱语境入背景，不作当日信号）。
+        · **利率归因**：`rates_attribution` 用 10Y TIPS（实际利率）与 BEI
+          （通胀补偿）分解名义利率变动——`real_driven` = 久期/期限溢价/流动性
+          压力（L 家族）；`inflation_driven` = 通胀再定价（I）。**凡把利率变动
+          归因于通胀，必须引用该字段**；缺位时归因语言降级为"利率上行，来源
+          未分解"（2026-07-09 教训：名义 10Y 上行曾被误归因为油价→通胀，分解
+          显示实为实际利率驱动）。
+        · 全部字段自带 as_of 与 lag_days——按真实日期使用，不冒充当日。
       Skip to step 2.
    c. **fetch_prices.py (capture input only — NOT valid for diagnosis, v1.0.5):**
       Live intraday fetches produce session-mismatched collages (US cash assets =

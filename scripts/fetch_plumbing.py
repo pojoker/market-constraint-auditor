@@ -31,11 +31,16 @@ ONRRP_URL = "https://markets.newyorkfed.org/api/rp/reverserepo/propositions/sear
 SRF_URL = "https://markets.newyorkfed.org/api/rp/results/search.json"
 FRED_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv"
 
-SERIES_ORDER = ["SOFR", "ONRRP", "SRF", "IORB", "TGA", "WALCL"]
+SERIES_ORDER = ["SOFR", "ONRRP", "SRF", "IORB", "TGA", "WALCL", "TIPS10", "BEI10"]
 FRED_SPECS = {
     "IORB": {"id": "IORB", "unit": "%", "scale": 1.0},
     "TGA": {"id": "WTREGEN", "unit": "$bn", "scale": 0.001},
     "WALCL": {"id": "WALCL", "unit": "$mn", "scale": 1.0},
+    # 工单9（2026-07-09）：10Y 实际利率 + 盈亏平衡通胀——名义利率变动的归因手术刀。
+    # 实际利率驱动 = 久期/期限溢价/流动性压力(L 家族)；通胀补偿驱动 = 通胀再定价(I)。
+    # Wind 仲裁码：TIPS10=G0005428, BEI10=U0929600（2026-07-09 已验，与 FRED 同源语义）。
+    "TIPS10": {"id": "DFII10", "unit": "%", "scale": 1.0},
+    "BEI10": {"id": "T10YIE", "unit": "%", "scale": 1.0},
 }
 NYFED_SPECS = {
     "SOFR": {"unit": "%", "source": "nyfed-api"},
@@ -181,14 +186,28 @@ def fetch_current_maps() -> tuple[dict[str, dict[str, float]], dict[str, str]]:
         except Exception as exc:
             maps[key] = {}
             errors[key] = str(exc)
+    _fetch_fred_batch(maps, errors, start_30)
+    return maps, errors
+
+
+def _fetch_fred_batch(maps: dict, errors: dict, cosd: str) -> None:
+    """FRED 批量拉取，带熔断：第一个序列彻底超时（重试后仍败）说明主机被墙/
+    限流（2026-07-09 实测：白天时段 5 序列×3 重试×20s 白烧 5 分钟）——其余
+    同主机序列直接跳过，留待下一窗口（capture 05:45 / diagnose 06:37 重试）。"""
+    fred_down = False
     for key, spec in FRED_SPECS.items():
+        if fred_down:
+            maps[key] = {}
+            errors[key] = "skipped: fred circuit open (earlier series timed out)"
+            continue
         try:
-            url = query_url(FRED_URL, {"id": spec["id"], "cosd": start_30})
+            url = query_url(FRED_URL, {"id": spec["id"], "cosd": cosd})
             maps[key] = parse_fred_csv(request_text(url), spec["scale"])
         except Exception as exc:
             maps[key] = {}
             errors[key] = str(exc)
-    return maps, errors
+            if "timed out" in str(exc).lower() or "timeout" in str(exc).lower():
+                fred_down = True
 
 
 def fetch_backfill_maps(days: int) -> tuple[dict[str, dict[str, float]], dict[str, str]]:
@@ -206,13 +225,7 @@ def fetch_backfill_maps(days: int) -> tuple[dict[str, dict[str, float]], dict[st
         except Exception as exc:
             maps[key] = {}
             errors[key] = str(exc)
-    for key, spec in FRED_SPECS.items():
-        try:
-            url = query_url(FRED_URL, {"id": spec["id"], "cosd": start})
-            maps[key] = parse_fred_csv(request_text(url), spec["scale"])
-        except Exception as exc:
-            maps[key] = {}
-            errors[key] = str(exc)
+    _fetch_fred_batch(maps, errors, start)
     return maps, errors
 
 
@@ -296,6 +309,44 @@ def derive(series: dict) -> dict:
     return {"sofr_iorb_spread_bp": spread, "net_liquidity_bn": net}
 
 
+def rates_attribution(maps: dict[str, dict[str, float]], target: str | None = None) -> dict:
+    """名义利率变动的归因：实际利率(TIPS10) vs 通胀补偿(BEI10)。
+
+    取各自序列最近 6 个观测（target 给定时取 ≤target 的 6 个），算 1 日与 5 观测
+    变动（bp）。verdict 判定（ex-ante 阈值，写死）：5 观测变动中一侧 |Δ|≥3bp 且
+    ≥另一侧 2 倍 → real_driven / inflation_driven；双侧都 ≥3bp 且互不支配 →
+    mixed；都 <3bp → quiet；数据不足 → null。"""
+    def tail_deltas(m: dict[str, float]):
+        ds = sorted(d for d in m if (target is None or d <= target))[-6:]
+        if len(ds) < 2:
+            return None, None, None
+        last = m[ds[-1]]
+        d1 = round((last - m[ds[-2]]) * 100, 1)
+        d5 = round((last - m[ds[0]]) * 100, 1) if len(ds) >= 6 else None
+        return ds[-1], d1, d5
+
+    r_as_of, r1, r5 = tail_deltas(maps.get("TIPS10", {}))
+    b_as_of, b1, b5 = tail_deltas(maps.get("BEI10", {}))
+    verdict = None
+    if r5 is not None and b5 is not None:
+        ra, ba = abs(r5), abs(b5)
+        if ra < 3 and ba < 3:
+            verdict = "quiet"
+        elif ra >= 3 and ra >= 2 * ba:
+            verdict = "real_driven"
+        elif ba >= 3 and ba >= 2 * ra:
+            verdict = "inflation_driven"
+        else:
+            verdict = "mixed"
+    return {
+        "rates_attribution": {
+            "real_1d_bp": r1, "real_5d_bp": r5, "real_as_of": r_as_of,
+            "bei_1d_bp": b1, "bei_5d_bp": b5, "bei_as_of": b_as_of,
+            "verdict": verdict,
+        }
+    }
+
+
 def derive_for_date(target: str, maps: dict[str, dict[str, float]]) -> dict:
     series = series_for_date(target, maps, {})
     for key in ("WALCL", "TGA", "ONRRP"):
@@ -303,16 +354,20 @@ def derive_for_date(target: str, maps: dict[str, dict[str, float]]) -> dict:
         if v is not None:
             series[key]["value"] = round(v, 4)
             series[key]["as_of"] = d
-    return derive(series)
+    out = derive(series)
+    out.update(rates_attribution(maps, target))
+    return out
 
 
 def current_row(maps: dict[str, dict[str, float]], errors: dict[str, str]) -> dict:
     series = series_from_latest(maps, errors)
+    derived = derive(series)
+    derived.update(rates_attribution(maps))
     return {
         "date": compact_date(),
         "fetched_at": utc_now().isoformat(),
         "series": series,
-        "derived": derive(series),
+        "derived": derived,
     }
 
 
