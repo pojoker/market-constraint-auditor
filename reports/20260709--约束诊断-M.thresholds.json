@@ -1,0 +1,98 @@
+{
+  "report_date": "20260709",
+  "regime": "M",
+  "regime_row": "multi_constraint",
+  "report_file": "reports/20260709--约束诊断-M.md",
+  "falsifiers": [
+    {
+      "asset": "Brent",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "能源显著回吐 → 供给冲击(S)分量证伪，回纯 L/F 框架重判。"
+    },
+    {
+      "asset": "WTI",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "能源第4日显著续涨 → 供给冲击固化，S 转正式主导（确认腿）。"
+    },
+    {
+      "asset": "SP500",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 60,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "股指主力补跌显著级 → '卖一切'复活，M 收回、L 恢复主导。"
+    },
+    {
+      "asset": "EM_ETF",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 60,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "新兴市场补跌 → L/F 传导升级，同上重判。"
+    },
+    {
+      "asset": "Gold",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "黄金显著反弹 → 实际利率挤压解释失效，贵金属腿重查。"
+    },
+    {
+      "asset": "MOVE",
+      "metric": "level",
+      "op": "cross",
+      "value": 75,
+      "dir": "up",
+      "window": 1,
+      "consecutive": 1,
+      "means": "MOVE 破 75（协议持续高位门槛）→ 波动率目标基金降杠杆压力实化，L 强化。"
+    },
+    {
+      "asset": "MOVE",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "MOVE 显著回落 → 机器放大腿消退；利率抛售同步熄火则通胀再定价成色打折。"
+    },
+    {
+      "asset": "US_2Y_yield",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "down",
+      "window": 1,
+      "consecutive": 1,
+      "means": "官方 2Y 再显著跳升（收益率↑=价格↓方向）→ 通胀再定价坐实，M 向 I 收敛。"
+    },
+    {
+      "asset": "DXY",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "any",
+      "window": 1,
+      "consecutive": 1,
+      "means": "DXY 显著动（任一方向）→ 美元腿裁决（悬案），F 权重重估。"
+    }
+  ]
+}
