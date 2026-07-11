@@ -6,3 +6,5 @@
 {"date":"20260707","schema":"D","regime":null,"regime_row":null,"l2":null,"l3":null,"report_file":"reports/20260707--不诊断-宽松与债务化不可分辨.md"}
 {"date": "20260708", "schema": "A", "regime": "L", "regime_row": "liquidity_crunch", "l2": "★★☆", "l3": "★★☆", "report_file": "reports/20260708--约束诊断-L.md"}
 {"date": "20260709", "schema": "A", "regime": "M", "regime_row": "multi_constraint", "l2": "★★☆", "l3": "★☆☆", "report_file": "reports/20260709--约束诊断-M.md"}
+{"date": "20260710", "schema": "A", "regime": "P", "regime_row": "policy_easing_trade", "l2": "★★☆", "l3": "★☆☆", "report_file": "reports/20260710--约束诊断-P.md"}
+{"date": "20260711", "schema": "D", "regime": null, "regime_row": null, "l2": "★☆☆", "l3": null, "report_file": "reports/20260711--不诊断-L2不足.md"}
