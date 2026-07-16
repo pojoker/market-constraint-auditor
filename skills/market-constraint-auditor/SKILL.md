@@ -1,6 +1,6 @@
 ---
 name: market-constraint-auditor
-version: "1.0.9"
+version: "1.1.0"
 user_invocable: true
 description: >
   Identifies the dominant constraint currently driving cross-asset price action
@@ -130,10 +130,11 @@ Steps:
    python3 <project>/scripts/threads_tool.py --list
    ```
    （工具不可用时直接 Read `data/open_threads.jsonl`。）每条 `status:"open"`
-   的悬案必须在本次诊断中三选一：**了结**（今日数据足以回答——在报告中给出
-   裁决与证据）、**顺延**（条件未满足——说明还差什么）、**过期**（超过
-   expires 仍无法裁决——注销并说明）。有活跃悬案时，报告正文含一个简短的
-   「悬案」小节，逐条记录当日处置。
+   的条目必须在本次诊断中三选一：**已回答**（今日数据足以回答——给出结论与
+   证据）、**顺延**（条件未满足——说明还差什么）、**过期**（超过 expires 仍
+   无法回答——注销并说明）。处置记录写进报告**审计附录的「待确认问题」小节**
+   （v1.1.0：报告文字用「待确认问题/已回答/顺延/过期」，不用「悬案/立案/裁决/
+   收案」等法庭词——账本机制与字段名不变，改的只是呈现）。
 3. **Run the constraint matrix (adjudication layer).** Interpret the step-2
    scores against the regime fingerprints in the protocol file: best match,
    runner-up, L1/L3 separation, anchor-migration questions (F9), mechanism.
@@ -155,6 +156,17 @@ Steps:
 5. **Output** using the appropriate schema:
    - **Schema A (Regime Diagnosis)** — default when conditions support a regime call
    - **Schema D (Abstention / 不诊断声明)** — when L2 confidence < ★★☆, or in confidence-whipsaw context, or ≥4 patchwork narratives required, or F11/F12 unfixable. See protocol §5 for trigger conditions. **Schema D is not a downgraded Schema A; choose it deliberately when conditions warrant.** `schema_d_suggested=true` from step 2 makes Schema D the default — issuing Schema A instead requires an explicit stated reason.
+   **生成顺序与表达状态（v1.1.0）：** 先在内部完成全部机械输入审计（L1-L4 判定、
+   Schema 选择、人工偏离检查），**再**按协议 §5 的表达状态选正文措辞：
+   - L3 = ★☆☆ 或存在观测等价的备选原因 → `A_PRICING_ONLY`：正文只说「最佳
+     匹配的价格模式是 X，原因未确认」，头部主导约束写
+     `原因未确认（L2 最佳匹配：X — 行名）`；禁用「接过定价权/已坐实/真 X 定价」；
+   - L3 ≥ ★★☆ 且备选原因已有区分证据 → `A_NARRATIVE_SUPPORTED`：允许「当前
+     更支持 X 作为主要解释」，仍附证伪。
+   Schema A 一律按协议 §5 的**「读者正文 + 审计附录」固定结构**输出（六个一级
+   标题、正文 ≤1500 中文字符、核心证据 ≤5 行）：机械打分、字段名、数据异常、
+   运行状态**完整保留但全部进附录**。因果语言过协议 §5「因果表达门」（利率
+   归因硬门、MOVE 表达边界）。ledger/sidecar/文件名照机器判断写，不受措辞影响。
 6. **Auto-save report.** After outputting, save the full report as a Markdown file:
    - Directory: `/Volumes/移动硬盘/market-constraint-auditor/reports/`
    - Filename for Schema A: `{YYYYMMDD}--约束诊断-{主导约束代号}.md` (e.g. `20260408--约束诊断-M.md`)
@@ -191,6 +203,9 @@ Steps:
      append 新条目（`id`/`opened`/`question`/`resolve_condition`/`expires`，
      expires 一般 ≤ 3-5 个交易日，`status:"open"`）。没有这一步，明天的
      诊断会重新失忆——与台账同级，不可省略。
+   - **Lint 自检（v1.1.0）：** 报告落盘后运行
+     `python3 <project>/scripts/report_lint.py --report <刚写的 .md>`。
+     lint 失败必须**修改报告本体直至通过**——不得只在记录里注明失败后放行。
 7. **Auto-generate HTML + PDF (mandatory).** After the `.md` is written, convert
    it so every report ships as `.md` + `.html` + `.pdf`. Run:
    ```
@@ -342,11 +357,27 @@ Default output language is Chinese (matching the user's language). If the user
 writes in English, respond in English. Asset tickers and index names (DXY, VIX,
 MOVE, Brent, TLT, HYG) stay in English regardless.
 
-### 中文写作纪律（v1.0.7，用户反馈 2026-07-08）
+### 中文写作纪律（v1.0.7 立规，v1.1.0 扩充——外部审阅意见采纳 2026-07-11）
 
 报告的第一读者是中文母语、非交易员背景的人。机械打分器与协议的内部字段名
 （callable / leg / aligned / conflicted / whipsaw / gap / signal / stale）是
 代码词汇，**禁止直译进正文**——"腿""可召唤"这类直译无法阅读。规则：
+
+0. **正文/附录隔离（v1.1.0，report_lint 机检）**：「审计附录」之前的读者正文
+   禁止出现——①程序字段：signal/vol/consec/stale/callable/aligned/conflicted/
+   whipsaw/regime/regime_row/mark/denominator/gap_adjacent；②直译词：可召唤、
+   判别腿、风险腿、美元腿、长端腿、机器腿、冲突腿、确认腿、深噪、噪音门、
+   厚盘、独木；③戏剧比喻：换了主角、接过定价权、余波、残响、复活、熄火、
+   瘫着、挨打、出场作证、收案；④运行日志词：补发、无头进程、看门狗、挂死、
+   例行自愈、跑批（运行事故只写对判断的影响，过程进附录「数据口径与运行
+   状态」）；⑤协议编号（F10/§3）与布尔字段。附录里字段名可保留，但首现必须
+   带中文语义（如「达到正式判断门槛（callable=true）」），不得当中文谓语。
+   增补替换：悬案/立案/裁决/收案 → 待确认问题/新增问题/本日结论/已回答；
+   管道数量层 → 资金市场官方数据；承接测试 → 下一交易日的持续性验证；
+   换了主角/接过定价权 → 相比上一交易日 X 的匹配度上升；坐实 → 得到进一步
+   支持；复活/熄火/瘫着/挨打 → 重新出现/减弱/波动过小/下跌。
+   句法：一句话一个推理步骤；正文不用「A → B → C」代替论证；括号只放数字或
+   日期；粗体只用于小标题关键词或单个数据结论。
 
 1. **正文用中文语义表达，机器字段名只能放括号里作锚点**（如「证据达标
    （callable=true）」），不得独立成句。对照表（左禁右用）：

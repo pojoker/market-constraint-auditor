@@ -813,3 +813,44 @@ M scripts/load_for_analysis.py
 - IORB/TGA/WALCL 数值对账待夜窗（FRED 生产时段）补齐；--backfill 730 实跑、
   SOURCES.md 登记、协议侧 v1.0.9 接线为后续步骤。capture wrapper 已加 4.5 步
   （~/bin，不在本 repo）。
+
+# Round 10 (date-key rule) — 2026-07-11
+
+主会话自研（codex CLI 版本过旧：默认模型报 400 需升级，派发失败）。
+规格：CODEX-TICKET-DATEKEY.md。
+
+- `scripts/capture_snapshot.py`：新增 `anchor_data_date()`/`resolve_date_key()`；
+  main 重排为「先判 changed → 再裁键位」。规则：有新收盘 → 键=数据日
+  （SP500 as_of，准点运行行为零变化，晚发运行自动挂对）；闭市日 → 维持
+  捕获日（Round 6 去重语义不变）；锚缺失 → 回退+WARN。
+- 验收：合成 5 例全过（准点/晚发实案重演/晚发后当晚共存/周末/锚缺失回退）；
+  160 行一次性校验：一致=5、闭市重复或 legacy 无 as_of=155、异常=0；
+  py_compile PASS；timeseries/diagnosis_log/open_threads/diagnosed_marks
+  四文件 SHA256 前后一致；未 commit。
+
+# Round 11 (report readability v2) — 2026-07-11
+
+规格：CLAUDE-TICKET-REPORT-READABILITY.md（外部审阅意见，主会话执行）。
+
+- `references/market-constraint-protocol.md`：Schema A 改为「读者正文+审计附录」
+  两层结构（六个固定一级标题、正文 ≤1500 中文字符、核心证据 ≤5 行）；新增
+  三种表达状态（D_ABSTAIN / A_PRICING_ONLY / A_NARRATIVE_SUPPORTED）；新增
+  因果表达门（五类准入证据 + 利率归因硬门 + MOVE 表达边界）；Schema D 中文化
+  （不足支撑→为什么今天不判断原因；表格用显著波动/波动过小/数据滞后；技术
+  说明置尾）。
+- `SKILL.md` v1.1.0：步骤 5 加生成顺序与表达状态；写作纪律第 0 条（正文/附录
+  隔离五类禁用词 + 增补替换表 + 句法规则）；待确认问题呈现词替换（悬案→待确认
+  问题，账本机制不变）；步骤 6 加 lint 自检强制（失败必须重写报告）。
+- `scripts/report_lint.py` v2：原有检查全保留；新增 8 项 style 检查
+  （reader_sections/reader_length/reader_internal_terms/reader_metaphors/
+  reader_ops_isolation/pricing_only_language/rates_attribution_guard/
+  schema_d_plain_language），报告日 >= 20260711 生效；`--style-only` 供 tmp
+  合成样例（不读 sidecar/ledger）；失败项输出具体命中原文。
+- 验收：工单 §10.1 PASS（9 项全绿）；§10.2 FAIL 并列出命中黑话
+  （机器腿/signal/regime + 换了主角/熄火 + 坐实）；§10.3 FAIL 并输出命中原文；
+  运行日志在正文 FAIL → 移附录 PASS；§10.4 附录机器字段带中文语义 PASS；
+  20260703-20260710 六份旧报告默认路径 rc=0 且 style 项数=0（不回溯）；
+  现存 20260711 D 报告按新规命中 `callable`（合同前产物，不回溯改写，如实
+  记录）；py_compile PASS；四受保护 data 文件 SHA256 前后一致；仓库与运行时
+  SKILL/protocol `cmp -s` 均为 0，`~/.claude/skills/market-constraint-auditor`
+  符号链接完好；未 commit（工单 0.3 约束）。

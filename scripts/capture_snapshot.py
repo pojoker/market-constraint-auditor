@@ -331,6 +331,37 @@ def trading_date(snapshot: dict) -> str:
     return datetime.fromisoformat(ts).strftime("%Y%m%d")
 
 
+def anchor_data_date(snapshot: dict) -> str | None:
+    """数据日 = 股指锚（SP500）的 as_of，YYYYMMDD；缺失/不可解析返回 None。"""
+    as_of = snapshot.get("assets", {}).get("SP500", {}).get("as_of")
+    if isinstance(as_of, str) and len(as_of) >= 10:
+        compact = as_of[:10].replace("-", "")
+        if compact.isdigit() and len(compact) == 8:
+            return compact
+    return None
+
+
+def resolve_date_key(snapshot: dict, changed: bool) -> str:
+    """键位规则（Round 10，2026-07-11）——一周三次键位事故后收敛：
+
+    - 有新收盘（changed=True）→ 键 = 数据日（SP500 as_of）。准点运行
+      （21:45 UTC）时与捕获 UTC 日恒等（行为零变化）；晚发运行（跨 UTC
+      午夜，如 07-11 02:24 捕获 07-10 收盘）自动挂对数据日，不再错挂
+      捕获日、也不会被当晚正常捕获同键覆盖。
+    - 闭市日（changed=False，锚未前进）→ 维持捕获 UTC 日——重复行按
+      捕获日记档是 Round 6 压缩序列去重逻辑的既有输入语义，不得改变。
+    - SP500 缺失/as_of 不可解析 → 回退捕获 UTC 日 + WARN。
+    """
+    fetch_key = trading_date(snapshot)
+    if not changed:
+        return fetch_key
+    data_key = anchor_data_date(snapshot)
+    if data_key is None:
+        log(f"WARN {fetch_key}: SP500 as_of unavailable; falling back to fetch-date key")
+        return fetch_key
+    return data_key
+
+
 def detect_partial_session(snapshot: dict) -> tuple[bool, str | None]:
     """Return whether the mark mixes stale US equities with newer assets."""
     assets = snapshot.get("assets", {})
@@ -401,7 +432,12 @@ def main():
         log(f"ABORT: no asset returned data ({len(assets)} assets, all errored)")
         sys.exit(1)
 
-    date_key = trading_date(snapshot)
+    # Round 10：先判"有无新收盘"，再据此裁决键位（数据日 vs 捕获日）。
+    # has_data_changed 的 prev 查找用 fetch-date 键与数据日键结果恒同
+    # （prev = date < key 的最近行，两种键都大于任何既有行日期）。
+    fetch_key = trading_date(snapshot)
+    changed = has_data_changed(snapshot, fetch_key)
+    date_key = resolve_date_key(snapshot, changed)
     rows = load_timeseries()
     suspects = mark_ghost_suspects(snapshot, date_key, rows)
     arbitrate_ghost_suspects(snapshot, suspects)
@@ -413,7 +449,6 @@ def main():
     except Exception as exc:
         retro_n = 0
         log(f"WARN {date_key}: retro correction skipped ({exc})")
-    changed = has_data_changed(snapshot, date_key)
     partial_session, partial_warn = detect_partial_session(snapshot)
     if partial_warn:
         log(f"WARN {date_key}: partial_session=false ({partial_warn})")
