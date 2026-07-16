@@ -1,0 +1,57 @@
+{
+  "report_date": "20260714",
+  "regime": "I",
+  "regime_row": "inflation_trade",
+  "falsifiers": [
+    {
+      "asset": "Brent",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "能源显著回吐→商品上涨撤回，I 匹配削弱"
+    },
+    {
+      "asset": "Copper",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "工业金属显著回吐→商品广度收缩，退回 S 供给冲击单一解释"
+    },
+    {
+      "asset": "Gold",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "贵金属再度显著下跌→I 行贵金属分量证伪，资金压力解释权重上升（与 MOVE 阈值合看）"
+    },
+    {
+      "asset": "MOVE",
+      "metric": "level",
+      "op": ">=",
+      "value": 75,
+      "dir": null,
+      "window": 1,
+      "consecutive": 2,
+      "means": "MOVE 连续 2 日收于 75 上方→资金压力分量单列（承接 20260713 预设，账本 id 20260714-20260713-2-32-80-3-06）"
+    },
+    {
+      "asset": "US_10Y_yield",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 60,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "长端利率显著下行→利率端与通胀再定价背离，转向增长/宽松解释"
+    }
+  ]
+}

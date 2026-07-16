@@ -77,6 +77,9 @@ Wind 终端登录**——07-08 实测无终端进程时可用；launchd 下 node
 
 ## 管道数量层（plumbing，Round 8/9 接入，data/plumbing.jsonl）
 
+> **Wind EDB 回退（2026-07-16）**：FRED 连续 5 日不可达后接入——TIPS10/BEI10/WALCL
+> 三序列 FRED 失败时自动改走 Wind（fetch+observation 模式；来源标签 wind-edb:码）。
+> IORB/TGA 因 Wind 搜索通道故障暂无码，待补。
 > 角色纪律：**量不进价格矩阵、不计 match%**——作 L/F 判别官、利率归因手术刀与
 > 脆弱语境。拉取钉死夜窗（FRED 白天从本网络超时/限流，2026-07-08/09 实测；
 > 已装熔断：首序列超时即跳过同主机其余序列）。每日 05:45 capture + 06:37 补拉。

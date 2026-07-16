@@ -8,3 +8,6 @@
 {"date": "20260709", "schema": "A", "regime": "M", "regime_row": "multi_constraint", "l2": "★★☆", "l3": "★☆☆", "report_file": "reports/20260709--约束诊断-M.md"}
 {"date": "20260710", "schema": "A", "regime": "P", "regime_row": "policy_easing_trade", "l2": "★★☆", "l3": "★☆☆", "report_file": "reports/20260710--约束诊断-P.md"}
 {"date": "20260711", "schema": "D", "regime": null, "regime_row": null, "l2": "★☆☆", "l3": null, "report_file": "reports/20260711--不诊断-L2不足.md"}
+{"date": "20260713", "schema": "A", "regime": "S", "regime_row": "geopolitical_supply_shock", "l2": "★★☆", "l3": "★★☆", "report_file": "reports/20260713--约束诊断-S.md"}
+{"date": "20260714", "schema": "A", "regime": "I", "regime_row": "inflation_trade", "l2": "★★☆", "l3": "★☆☆", "report_file": "reports/20260714--约束诊断-I.md"}
+{"date": "20260715", "schema": "A", "regime": "P", "regime_row": "policy_easing_trade", "l2": "★★☆", "l3": "★☆☆", "report_file": "reports/20260715--约束诊断-P.md"}

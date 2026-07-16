@@ -187,7 +187,9 @@ def fetch_current_maps() -> tuple[dict[str, dict[str, float]], dict[str, str]]:
             maps[key] = {}
             errors[key] = str(exc)
     _fetch_fred_batch(maps, errors, start_30)
-    return maps, errors
+    sources: dict[str, str] = {}
+    _wind_fallback(maps, errors, sources, observation=30)
+    return maps, errors, sources
 
 
 def _fetch_fred_batch(maps: dict, errors: dict, cosd: str) -> None:
@@ -210,6 +212,70 @@ def _fetch_fred_batch(maps: dict, errors: dict, cosd: str) -> None:
                 fred_down = True
 
 
+# Wind EDB 回退（2026-07-16，FRED 连续 5 日不可达后接入）。仅覆盖已验证指标码
+# 的序列（语义/数值 07-09 与 FRED 交叉核对分毫不差）；IORB/TGA 的码因 Wind 搜索
+# 通道故障暂缺，待补。调用走本地 CLI 桥（云端服务，node 绝对路径防 launchd PATH）。
+WIND_NODE = "/Users/jowang/.nvm/versions/node/v22.22.3/bin/node"
+WIND_SKILL_DIR = str(Path.home() / ".agents/skills/wind-mcp-skill")
+WIND_CLI = str(Path(WIND_SKILL_DIR) / "scripts/cli.mjs")
+WIND_FALLBACK_CODES = {
+    "TIPS10": "G0005428",   # 美国:国债实际收益率:10年 [%]
+    "BEI10": "U0929600",    # 美国:盈亏平衡通胀率:10年:非季调 [%]
+    "WALCL": "G1100075",    # 美国:所有联储银行:资产:总资产 [$mn]
+}
+
+
+def _wind_fetch_series(code: str, observation: int) -> dict[str, float]:
+    """按指标码直取（fetch 模式 + observation 参数——2026-07-16 起后端要求
+    observation 为纯数字或 all，beginDate/endDate 会被拒）。返回 {ISO日期: 值}。"""
+    import subprocess
+    payload = json.dumps(
+        {"executionMode": "fetch", "question": code, "observation": str(observation)},
+        ensure_ascii=False,
+    )
+    res = subprocess.run(
+        [WIND_NODE, WIND_CLI, "call", "economic_data", "natural_language_get_edb_data", payload],
+        cwd=WIND_SKILL_DIR, capture_output=True, text=True, timeout=35,
+    )
+    if res.returncode != 0:
+        raise RuntimeError(f"wind cli exit {res.returncode}: {res.stderr[:150]}")
+    envelope = json.loads(res.stdout)
+    if envelope.get("error") or envelope.get("isError"):
+        raise RuntimeError(f"wind error: {str(envelope.get('error'))[:150]}")
+    inner = json.loads(envelope["content"][0]["text"])
+    out: dict[str, float] = {}
+    for item in inner.get("data", {}).get("data", []):
+        if item.get("meta", {}).get("code") != code:
+            continue
+        for d, v in zip(item.get("date", []), item.get("value", [])):
+            if d is None or v is None:
+                continue
+            d = str(d)
+            iso = f"{d[:4]}-{d[4:6]}-{d[6:8]}" if len(d) == 8 and d.isdigit() else d[:10]
+            try:
+                out[iso] = float(v)
+            except (TypeError, ValueError):
+                continue
+    return out
+
+
+def _wind_fallback(maps: dict, errors: dict, sources: dict, observation: int) -> None:
+    """FRED 失败的序列，逐个尝试 Wind（有码者）。成功则覆盖 map、记 source、
+    清 error；失败保留原 FRED 错误并附注。序列间隔 5s 防 QPS 限流。"""
+    for key, code in WIND_FALLBACK_CODES.items():
+        if maps.get(key):
+            continue  # FRED 已成功
+        try:
+            values = _wind_fetch_series(code, observation)
+            if values:
+                maps[key] = values
+                sources[key] = f"wind-edb:{code}"
+                errors.pop(key, None)
+        except Exception as exc:
+            errors[key] = f"{errors.get(key, 'fred failed')}; wind fallback: {str(exc)[:100]}"
+        time.sleep(5)
+
+
 def fetch_backfill_maps(days: int) -> tuple[dict[str, dict[str, float]], dict[str, str]]:
     maps: dict[str, dict[str, float]] = {}
     errors: dict[str, str] = {}
@@ -226,15 +292,18 @@ def fetch_backfill_maps(days: int) -> tuple[dict[str, dict[str, float]], dict[st
             maps[key] = {}
             errors[key] = str(exc)
     _fetch_fred_batch(maps, errors, start)
-    return maps, errors
+    sources: dict[str, str] = {}
+    _wind_fallback(maps, errors, sources, observation=max(days, 30))
+    return maps, errors, sources
 
 
-def series_from_latest(maps: dict[str, dict[str, float]], errors: dict[str, str]) -> dict:
+def series_from_latest(maps: dict[str, dict[str, float]], errors: dict[str, str], sources: dict[str, str] | None = None) -> dict:
     out = {}
+    sources = sources or {}
     for key in SERIES_ORDER:
         if key in FRED_SPECS:
             spec = FRED_SPECS[key]
-            source = f"fred:{spec['id']}"
+            source = sources.get(key, f"fred:{spec['id']}")
             unit = spec["unit"]
         else:
             spec = NYFED_SPECS[key]
@@ -252,12 +321,14 @@ def series_for_date(
     target: str,
     maps: dict[str, dict[str, float]],
     errors: dict[str, str],
+    sources: dict[str, str] | None = None,
 ) -> dict:
     out = {}
+    sources = sources or {}
     for key in SERIES_ORDER:
         if key in FRED_SPECS:
             spec = FRED_SPECS[key]
-            source = f"fred:{spec['id']}"
+            source = sources.get(key, f"fred:{spec['id']}")
             unit = spec["unit"]
         else:
             spec = NYFED_SPECS[key]
@@ -359,8 +430,8 @@ def derive_for_date(target: str, maps: dict[str, dict[str, float]]) -> dict:
     return out
 
 
-def current_row(maps: dict[str, dict[str, float]], errors: dict[str, str]) -> dict:
-    series = series_from_latest(maps, errors)
+def current_row(maps: dict[str, dict[str, float]], errors: dict[str, str], sources: dict[str, str] | None = None) -> dict:
+    series = series_from_latest(maps, errors, sources)
     derived = derive(series)
     derived.update(rates_attribution(maps))
     return {
@@ -371,7 +442,7 @@ def current_row(maps: dict[str, dict[str, float]], errors: dict[str, str]) -> di
     }
 
 
-def backfill_rows(maps: dict[str, dict[str, float]], errors: dict[str, str]) -> list[dict]:
+def backfill_rows(maps: dict[str, dict[str, float]], errors: dict[str, str], sources: dict[str, str] | None = None) -> list[dict]:
     dates = sorted({d for values in maps.values() for d in values})
     fetched_at = utc_now().isoformat()
     rows = []
@@ -380,7 +451,7 @@ def backfill_rows(maps: dict[str, dict[str, float]], errors: dict[str, str]) -> 
             {
                 "date": d.replace("-", ""),
                 "fetched_at": fetched_at,
-                "series": series_for_date(d, maps, errors),
+                "series": series_for_date(d, maps, errors, sources),
                 "derived": derive_for_date(d, maps),
             }
         )
@@ -440,11 +511,11 @@ def main() -> int:
 
     out = Path(args.output)
     if args.backfill:
-        maps, errors = fetch_backfill_maps(args.backfill)
-        rows = backfill_rows(maps, errors)
+        maps, errors, sources = fetch_backfill_maps(args.backfill)
+        rows = backfill_rows(maps, errors, sources)
     else:
-        maps, errors = fetch_current_maps()
-        rows = [current_row(maps, errors)]
+        maps, errors, sources = fetch_current_maps()
+        rows = [current_row(maps, errors, sources)]
     total, changed = upsert_rows(out, rows)
     summary = {
         "output": str(out),

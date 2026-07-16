@@ -1,0 +1,55 @@
+{
+  "report_date": "20260710",
+  "regime": "P",
+  "regime_row": "policy_easing_trade",
+  "falsifiers": [
+    {
+      "asset": "SP500",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "股指显著回吐→宽松指纹撤销，机械修复坐实"
+    },
+    {
+      "asset": "SHY",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "前端转跌→降息路径定价撤销"
+    },
+    {
+      "asset": "MOVE",
+      "metric": "level",
+      "op": ">=",
+      "value": 75,
+      "window": 1,
+      "consecutive": 1,
+      "means": "债市波动率进入持续高位域→与宽松定价矛盾，P 证伪（基线漂移待核，触发时先核对悬案 20260710-move-baseline）"
+    },
+    {
+      "asset": "Brent",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↑",
+      "window": 1,
+      "consecutive": 1,
+      "means": "能源重新显著上攻→S 供给冲击复活，回到 M 框架"
+    },
+    {
+      "asset": "VIX",
+      "metric": "level",
+      "op": ">=",
+      "value": 18,
+      "window": 1,
+      "consecutive": 1,
+      "means": "VIX 反弹破 18→修复中断，P 减弱"
+    }
+  ]
+}

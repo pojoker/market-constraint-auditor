@@ -1,0 +1,67 @@
+{
+  "report_date": "20260715",
+  "regime": "P",
+  "regime_row": "policy_easing_trade",
+  "falsifiers": [
+    {
+      "asset": "SHY",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "短端利率回升（SHY 显著下跌）→宽松模式的前端分量撤回"
+    },
+    {
+      "asset": "DXY",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↑",
+      "window": 1,
+      "consecutive": 1,
+      "means": "美元显著反弹→美元走弱撤回，P 行匹配削弱"
+    },
+    {
+      "asset": "US_10Y_yield",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 60,
+      "dir": "↑",
+      "window": 1,
+      "consecutive": 1,
+      "means": "长端利率显著上行→与宽松背离，久期/供给压力口径回补"
+    },
+    {
+      "asset": "VIX",
+      "metric": "level",
+      "op": ">=",
+      "value": 18,
+      "dir": null,
+      "window": 1,
+      "consecutive": 1,
+      "means": "VIX 收于 18 上方→低波动前提失效，宽松模式撤回"
+    },
+    {
+      "asset": "Brent",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↑",
+      "window": 1,
+      "consecutive": 1,
+      "means": "能源显著续涨→通胀/供给解释权重回升"
+    },
+    {
+      "asset": "MOVE",
+      "metric": "level",
+      "op": ">=",
+      "value": 75,
+      "dir": null,
+      "window": 1,
+      "consecutive": 1,
+      "means": "MOVE 重上 75→资金压力重新评估（承接 20260713/20260714 预设阈值，账本 id 20260716-srf-escalation 合看）"
+    }
+  ]
+}
