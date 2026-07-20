@@ -17,3 +17,4 @@ reports/*
 .claude/
 .gstack/
 scan_reports/
+.codex/

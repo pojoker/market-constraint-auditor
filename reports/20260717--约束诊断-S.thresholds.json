@@ -1,0 +1,67 @@
+{
+  "report_date": "20260717",
+  "regime": "S",
+  "regime_row": "geopolitical_supply_shock",
+  "falsifiers": [
+    {
+      "asset": "Brent",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "原油显著回吐→供给冲击定价撤回，S 证伪"
+    },
+    {
+      "asset": "Brent",
+      "metric": "level",
+      "op": "<=",
+      "value": 84,
+      "dir": null,
+      "window": 1,
+      "consecutive": 1,
+      "means": "Brent 跌回 84 美元下方（回吐本轮升级涨幅大部分）→S 撤回"
+    },
+    {
+      "asset": "VIX",
+      "metric": "level",
+      "op": "<=",
+      "value": 16.5,
+      "dir": null,
+      "window": 1,
+      "consecutive": 1,
+      "means": "VIX 收回 16.5 下方→冲击定价消退，S 判断减弱"
+    },
+    {
+      "asset": "Copper",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 80,
+      "dir": "↑",
+      "window": 1,
+      "consecutive": 1,
+      "means": "铜显著上涨→商品广度扩展，改判 I 通胀交易（次佳行回补路径之一）"
+    },
+    {
+      "asset": "TLT",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "TLT 显著下跌（与股指续跌合看）→资金压力分量单独评估（账本 id 20260718-s-day2-persistence 关联）"
+    },
+    {
+      "asset": "MOVE",
+      "metric": "level",
+      "op": ">=",
+      "value": 75,
+      "dir": null,
+      "window": 1,
+      "consecutive": 2,
+      "means": "MOVE 连续 2 日收于 75 上方→程序化减仓环境出现，S 之外需单列 L 分量"
+    }
+  ]
+}
