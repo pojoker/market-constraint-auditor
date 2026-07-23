@@ -214,10 +214,12 @@ def _fetch_fred_batch(maps: dict, errors: dict, cosd: str) -> None:
 
 # Wind EDB 回退（2026-07-16，FRED 连续 5 日不可达后接入）。仅覆盖已验证指标码
 # 的序列（语义/数值 07-09 与 FRED 交叉核对分毫不差）；IORB/TGA 的码因 Wind 搜索
-# 通道故障暂缺，待补。调用走本地 CLI 桥（云端服务，node 绝对路径防 launchd PATH）。
-WIND_NODE = "/Users/jowang/.nvm/versions/node/v22.22.3/bin/node"
-WIND_SKILL_DIR = str(Path.home() / ".agents/skills/wind-mcp-skill")
-WIND_CLI = str(Path(WIND_SKILL_DIR) / "scripts/cli.mjs")
+# 通道故障暂缺，待补。
+# 2026-07-23 起直连 MCP 后端弃用 cli.mjs：skill 自动更新后 CLI 解析层把后端
+# 新信封 message:"OK" 误判为错误（连续 2 日 wind cli exit 1），而后端本身正常
+# （raw POST 验证通过）。密钥读 ~/.wind-aifinmarket/config，与 CLI 同源。
+WIND_ENDPOINT = "https://mcp.wind.com.cn/vserver_economic_data/mcp/"
+WIND_KEY_FILE = Path.home() / ".wind-aifinmarket" / "config"
 WIND_FALLBACK_CODES = {
     "TIPS10": "G0005428",   # 美国:国债实际收益率:10年 [%]
     "BEI10": "U0929600",    # 美国:盈亏平衡通胀率:10年:非季调 [%]
@@ -225,24 +227,46 @@ WIND_FALLBACK_CODES = {
 }
 
 
+def _wind_api_key() -> str:
+    for line in WIND_KEY_FILE.read_text().splitlines():
+        line = line.strip()
+        if line.startswith("WIND_API_KEY") and "=" in line:
+            return line.split("=", 1)[1].strip()
+    raise RuntimeError(f"WIND_API_KEY not found in {WIND_KEY_FILE}")
+
+
 def _wind_fetch_series(code: str, observation: int) -> dict[str, float]:
-    """按指标码直取（fetch 模式 + observation 参数——2026-07-16 起后端要求
-    observation 为纯数字或 all，beginDate/endDate 会被拒）。返回 {ISO日期: 值}。"""
-    import subprocess
-    payload = json.dumps(
-        {"executionMode": "fetch", "question": code, "observation": str(observation)},
-        ensure_ascii=False,
+    """按指标码直取（fetch 模式 + observation 参数）。返回 {ISO日期: 值}。"""
+    body = {
+        "jsonrpc": "2.0", "id": 1, "method": "tools/call",
+        "params": {
+            "name": "natural_language_get_edb_data",
+            "arguments": {"executionMode": "fetch", "question": code,
+                          "observation": str(observation)},
+        },
+    }
+    resp = requests.post(
+        WIND_ENDPOINT, json=body, timeout=35,
+        headers={"Authorization": f"Bearer {_wind_api_key()}",
+                 "Accept": "application/json, text/event-stream"},
     )
-    res = subprocess.run(
-        [WIND_NODE, WIND_CLI, "call", "economic_data", "natural_language_get_edb_data", payload],
-        cwd=WIND_SKILL_DIR, capture_output=True, text=True, timeout=35,
-    )
-    if res.returncode != 0:
-        raise RuntimeError(f"wind cli exit {res.returncode}: {res.stderr[:150]}")
-    envelope = json.loads(res.stdout)
-    if envelope.get("error") or envelope.get("isError"):
-        raise RuntimeError(f"wind error: {str(envelope.get('error'))[:150]}")
-    inner = json.loads(envelope["content"][0]["text"])
+    resp.raise_for_status()
+    # 两个解码陷阱（07-23 实测）：①SSE 头不带 charset，requests 默认按
+    # latin-1 解码，中文 UTF-8 字节中的 0x85 会被 splitlines() 当换行切断
+    # ——必须显式 utf-8 且只按 \n 切；②响应为 SSE（data: 行）或纯 JSON 两态。
+    resp.encoding = "utf-8"
+    data_lines = [l[5:].lstrip() for l in resp.text.split("\n") if l.startswith("data:")]
+    if data_lines:
+        try:
+            payload = json.loads("".join(data_lines))
+        except json.JSONDecodeError:
+            payload = json.loads("\n".join(data_lines))
+    else:
+        payload = json.loads(resp.text)
+    result = payload.get("result") or {}
+    if payload.get("error") or result.get("isError"):
+        raise RuntimeError(f"wind error: {str(payload.get('error') or result)[:150]}")
+    inner = json.loads(result["content"][0]["text"])
     out: dict[str, float] = {}
     for item in inner.get("data", {}).get("data", []):
         if item.get("meta", {}).get("code") != code:
