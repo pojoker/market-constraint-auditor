@@ -15,3 +15,6 @@
 {"date": "20260717", "schema": "A", "regime": "S", "regime_row": "geopolitical_supply_shock", "l2": "★★☆", "l3": "★★☆", "report_file": "reports/20260717--约束诊断-S.md"}
 {"date": "20260720", "schema": "D", "regime": null, "regime_row": null, "l2": "★☆☆", "l3": null, "report_file": "reports/20260720--不诊断-L2不足.md"}
 {"date": "20260721", "schema": "A", "regime": "I", "regime_row": "inflation_trade", "l2": "★★☆", "l3": "★☆☆", "report_file": "reports/20260721--约束诊断-I.md"}
+{"date": "20260722", "schema": "A", "regime": "I", "regime_row": "inflation_trade", "l2": "★★☆", "l3": "★☆☆", "report_file": "reports/20260722--约束诊断-I.md"}
+{"date": "20260723", "schema": "A", "regime": "L", "regime_row": "liquidity_crunch", "l2": "★★☆", "l3": "★☆☆", "report_file": "reports/20260723--约束诊断-L.md"}
+{"date": "20260724", "schema": "D", "regime": null, "regime_row": null, "l2": "★☆☆", "l3": null, "report_file": "reports/20260724--不诊断-L2不足.md"}

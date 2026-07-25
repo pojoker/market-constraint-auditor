@@ -1,0 +1,67 @@
+{
+  "report_date": "20260722",
+  "regime": "I",
+  "regime_row": "inflation_trade",
+  "falsifiers": [
+    {
+      "asset": "Brent",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "能源一侧显著回吐→通胀定价撤回，I 证伪"
+    },
+    {
+      "asset": "Gold",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "贵金属一侧显著回吐→I 判断减弱"
+    },
+    {
+      "asset": "US_10Y_yield",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "利率一侧回落（收益率显著下行）→I 撤回，改判增长/宽松方向重评"
+    },
+    {
+      "asset": "SP500",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↑",
+      "window": 1,
+      "consecutive": 2,
+      "means": "股指连续第 2 日显著上涨→通胀行反向证据重现，重评模式归属"
+    },
+    {
+      "asset": "MOVE",
+      "metric": "level",
+      "op": ">=",
+      "value": 75,
+      "dir": null,
+      "window": 1,
+      "consecutive": 2,
+      "means": "MOVE 连续 2 日收于 75 上方→程序化减仓环境出现，资金压力分量单独评估（账本 id 20260723-move-07-22-75-76-31 关联）"
+    },
+    {
+      "asset": "DXY",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": null,
+      "window": 1,
+      "consecutive": 1,
+      "means": "DXY 显著波动→与 USDCNY 方向核对：同向则美元类恢复判别力，重评（账本 id 20260721-8-07-20-82-dxy-usd 关联）"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "report_date": "20260723",
+  "regime": "L",
+  "regime_row": "liquidity_crunch",
+  "falsifiers": [
+    {
+      "asset": "Gold",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↑",
+      "window": 1,
+      "consecutive": 1,
+      "means": "对冲资产止跌回升→若股指仍弱，形态转经典避险，L 行改判"
+    },
+    {
+      "asset": "MOVE",
+      "metric": "level",
+      "op": "<=",
+      "value": 75,
+      "dir": null,
+      "window": 1,
+      "consecutive": 1,
+      "means": "MOVE 收回 75 下方→程序化减仓环境（预设定义）解除，L 判断削弱"
+    },
+    {
+      "asset": "SP500",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↑",
+      "window": 1,
+      "consecutive": 1,
+      "means": "股指显著反弹→与金反弹并现则单日事件驱动读法成立，L 撤回"
+    },
+    {
+      "asset": "Brent",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↓",
+      "window": 1,
+      "consecutive": 1,
+      "means": "冲击源事件溢价显著回吐→重评整体形态"
+    },
+    {
+      "asset": "HYG",
+      "metric": "move_vol_pct",
+      "op": ">=",
+      "value": 50,
+      "dir": "↑",
+      "window": 1,
+      "consecutive": 1,
+      "means": "信用修复→全面抛售读法削弱"
+    }
+  ]
+}
